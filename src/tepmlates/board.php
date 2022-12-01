@@ -26,11 +26,11 @@
         }*/
         $moves = $grid;
 
-        if(file_exists('moves.txt')) {
+        /*if(file_exists('moves.txt')) {
             $file = file_get_contents('moves.txt', true);
             $moves = json_decode($file, true);
             file_put_contents('moves.txt', json_encode($moves, JSON_PRETTY_PRINT));
-        }
+        }*/
 
         /* moving pieces in general */
         /*if(isset($_POST['piece'])&&($_POST['move'])) {}*/
@@ -47,7 +47,7 @@
             /*$moves[$grabPos[0][0]][$grabPos[1][0]] = '';*/
 
 
-        /*var_dump($moves[$setPos[0][0]][$setPos[1][0]]);*/
+        var_dump($oldPos);
 
 
 
@@ -90,11 +90,11 @@
     <!-- input forms -->
     <div class="input">
         <h4>Enter next Move</h4>
-        <form action="" method="POST">
+        <form action="" method="post">
             <label for="move">from</label>
-            <input type="text" id="piece" name="piece" placeholder="move from E.g 22" >
+            <input type="text" id="piece" name="piece" value="01" placeholder="move from E.g 22" >
             <label for="move">to</label>
-            <input type="text" id="move" name="move" placeholder="to E.g 23" >
+            <input type="text" id="move" name="move" value="02" placeholder="to E.g 23" >
             <input type="submit" value="Submit">
             <!--<label for="reset">reset</label>
             <input type="submit" name="reset" value="reset">-->
