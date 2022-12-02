@@ -3,4 +3,5 @@
 /local.env
 /docker
 /src/contact_book
+src/backup
 .idea
