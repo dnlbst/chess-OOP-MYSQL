@@ -3,13 +3,13 @@
         <?php
 
         /* Unicode Chess Pieces */
-        $pieces = [
+        $UnicodePieces = [
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
             'k' => '&#x265A;','d' => '&#x265B;', 't' => '&#x265C;', 'l' => '&#x265D;', 's' => '&#x265E;', 'b' => '&#x265F;'
         ];
 
         /* initial grid array */
-        $grid = [
+        $startGrid = [
             ['t','l','s','d','k','s','l','t'],
             ['b','b','b','b','b','b','b','b',],
             ['','','','','','','',''],
@@ -18,87 +18,84 @@
             ['','','','','','','',''],
             ['B','B','B','B','B','B','B','B'],
             ['T','L','S','D','K','S','L','T'],
+            [''],
         ];
 
+        if(file_exists('grid.txt')) {
+            $file = file_get_contents('grid.txt', true);
+            $grid = json_decode($file, true);
+        } else {
+            file_put_contents('grid.txt', json_encode($startGrid, JSON_PRETTY_PRINT));
+            $grid = $startGrid;
+        }
 
-        /* store moves in json file */
-        /*if($_POST['reset'] == 'reset'){
-        }*/
-        $moves = $grid;
+        /* moving pieces */
+        $piece = 'x';
+        if(isset($_POST['piece'])&&($_POST['move'])) {
+            $oldPos = str_split($_POST['piece']);
+            $piece = $grid[$oldPos[0][0]][$oldPos[1][0]];
+            $newPos = str_split($_POST['move']);
+            $grid[$newPos[0][0]][$newPos[1][0]] = $piece;
+            /* remove old position */
+            $grid[$oldPos[0][0]][$oldPos[1][0]] = '';
 
-        /*if(file_exists('moves.txt')) {
-            $file = file_get_contents('moves.txt', true);
-            $moves = json_decode($file, true);
-            file_put_contents('moves.txt', json_encode($moves, JSON_PRETTY_PRINT));
-        }*/
+            /* check players turn */
 
-        /* moving pieces in general */
-        /*if(isset($_POST['piece'])&&($_POST['move'])) {}*/
-            $oldPos = $_POST['piece'];
-            $newPos = $_POST['move'];
-            $grabPiece = str_split($oldPos);
-            $setPiece = str_split($newPos);
-            $piece = $moves[$grabPiece[0][0]][$grabPiece[1][0]];
-            $moves[$setPiece[0][0]][$setPiece[1][0]] = $piece;
+            /* save players turn */
+            $grid[8][0] = $piece;
+            file_put_contents('grid.txt', json_encode($grid, JSON_PRETTY_PRINT));
+        }
 
-
-
-            /* remove old position from grid */
-            /*$moves[$grabPos[0][0]][$grabPos[1][0]] = '';*/
+        if(ctype_upper($piece)) {
+            $turn = "It's black's turn";
+        } else {
+            $turn = "It's white's turn";
+        }
 
 
-        var_dump($oldPos);
+        echo "<br>";
+        var_dump($grid[8][0]);
+        echo "<br>";
+        var_dump($piece);
+        echo "<br>";
+        var_dump(ctype_upper($piece));
 
-
-
-
-        /* show new move */
-        foreach ($moves as $key=>$move){
-
+        /* reset */
+        if (isset($_POST['reset'])) {
+            unlink('grid.txt');
         }
 
         /* chess board loop */
-        for($i=0; $i <= 7; $i++)
-        {
-            echo "<div class='row'>";
-            for($j=0;$j<=7;$j++)
+        function showGrid($grid, $pieces) {
+            for($i=0; $i <= 7; $i++)
             {
-                $total=$i+$j;
-                if($total%2==0)
+                echo "<div class='rownum'>$i</div>";
+                echo "<div class='row'>";
+                for($j=0;$j<=7;$j++)
                 {
-                    echo "<div class='white'>";
+                    $total=$i+$j;
+                    if($total%2==0)
+                    {
+                        echo "<div class='white'>";
+                    }
+                    else
+                    {
+                        echo "<div class='black'>";
+                    }
+                    if ($grid[$i][$j] !== '') {
+                        echo $pieces[$grid[$i][$j]];
+                    }
+                    echo '</div>';
                 }
-                else
-                {
-                    echo "<div class='black'>";
-                }
-                if ($moves[$i][$j] !== '') {
-                    echo $pieces[$moves[$i][$j]];
-                }
-
-                echo '</div>';
+                echo "</div>";
             }
-            echo "</div>";
         }
 
-        /* reset */
-
+        /* grid load */
+        showGrid($grid, $UnicodePieces);
 
         ?>
+    </div>
 
-    </div>
-    <!-- input forms -->
-    <div class="input">
-        <h4>Enter next Move</h4>
-        <form action="" method="post">
-            <label for="move">from</label>
-            <input type="text" id="piece" name="piece" value="01" placeholder="move from E.g 22" >
-            <label for="move">to</label>
-            <input type="text" id="move" name="move" value="02" placeholder="to E.g 23" >
-            <input type="submit" value="Submit">
-            <!--<label for="reset">reset</label>
-            <input type="submit" name="reset" value="reset">-->
-        </form>
-    </div>
+
 </section>
-
