@@ -10,12 +10,12 @@
         include('tepmlates/board.php');
 
         echo "<div class='input'>
-                <h4>{$turn}</h4>
+                <h4>{$message}</h4>
                 <form action='' method='post'>
-                    <label for='move'>from</label>
-                    <input type='text' id='piece' name='piece' value='' placeholder='move from E.g 10' >
-                    <label for='move'>to</label>
-                    <input type='text' id='move' name='move' value='' placeholder='to E.g 20' >
+                    <label for='from'>from</label>
+                    <input type='text' id='from' name='from' maxlength='2' placeholder='' autofocus>
+                    <label for='to'>to</label>
+                    <input type='text' id='to' name='to' maxlength='2' placeholder='' >
                     <input type='submit' value='Submit'>
                     <label for='reset'></label>
                     <input id='reset' type='submit' name='reset' value='Reset'>
