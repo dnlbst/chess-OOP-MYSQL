@@ -17,27 +17,24 @@
 //            ],
 //            'turn' => 'x',
 //        ];
-
         $initGame = [
             'grid' => [
                 ['','','','b','k','b','',''],
-                ['','','','b','b','b','',''],
+                ['B','','','b','b','b','',''],
                 ['','','','','','','',''],
                 ['','','','','','S','',''],
                 ['','','','','','','',''],
                 ['','','','','','','',''],
-                ['','','','','','','',''],
+                ['b','','','','','','',''],
                 ['','','','','','','',''],
             ],
-            'turn' => 'x',
+            'turn' => 'S',
         ];
-
         /* Unicode Chess Pieces */
         $UnicodePieces = [
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
             'k' => '&#x265A;','d' => '&#x265B;', 't' => '&#x265C;', 'l' => '&#x265D;', 's' => '&#x265E;', 'b' => '&#x265F;'
         ];
-
         /* X & Y Axis Translation */
         $xAxis = [
             'a' => 0,
@@ -49,7 +46,6 @@
             'g' => 6,
             'h' => 7,
         ];
-
         $yAxis = [
             '1' => 7,
             '2' => 6,
@@ -60,7 +56,6 @@
             '7' => 1,
             '8' => 0,
         ];
-
         /* valid moves */
         $vectors = [
             'k' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
@@ -70,7 +65,6 @@
             's' => [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2],[-1,-2]],
             'b' => [[0,-1]],
         ];
-
         /* save file */
         if(file_exists('grid.txt')) {
             $file = file_get_contents('grid.txt', true);
@@ -82,21 +76,17 @@
             $grid = $initGame['grid'];
             $turn = $initGame['turn'];
         }
-
         /* move validaion */
         function getPossibleMoves($x,$y, $grid, $turn, $vectors, $allVectors, $menace = false) {
             $piece = $grid[$y][$x];
             $possibleMoves = [];
             foreach ($vectors as $vector) {
-
                 if ($piece === 'b') {
                     $vector[0] *= -1;
                     $vector[1] *= -1;
                 }
-
                 $xToTest = $x + $vector[0];
                 $yToTest = $y + $vector[1];
-
                 while ($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7){
                     $fieldToTest = $grid[$yToTest][$xToTest];
                     if( $fieldToTest === '' || (ctype_lower($piece) && ctype_upper($fieldToTest) && $piece !== 'b') || (ctype_upper($piece) && ctype_lower($fieldToTest) && $piece !== 'B' )
@@ -109,41 +99,35 @@
                             $possibleMoves[] = [$xToTest, $yToTest];
                         }
                     }
-
                     if (strtolower($piece) === 'b') {
-                        if ($xToTest-1 >= 0 && ((ctype_lower($grid[$yToTest][$xToTest-1]) && ctype_upper($piece)) || (ctype_lower($piece) && ctype_upper($grid[$yToTest][$xToTest-1]))) ){
-                            $possibleMoves[] = [$xToTest-1, $yToTest];
-                        }
-                        if ($xToTest+1 <= 7 && ((ctype_lower($grid[$yToTest][$xToTest+1]) && ctype_upper($piece)) || (ctype_upper($grid[$yToTest][$xToTest+1]) && ctype_lower($piece))) ) {
+                        if ($xToTest+1 <= 7 && ((ctype_lower($grid[$yToTest][$xToTest+1]) && ctype_upper($piece)) || (ctype_lower($piece) && ctype_upper($grid[$yToTest][$xToTest+1]))) ){
                             $possibleMoves[] = [$xToTest+1, $yToTest];
                         }
+                        if ($xToTest-1 >= 0 && ((ctype_lower($grid[$yToTest][$xToTest-1]) && ctype_upper($piece)) || (ctype_upper($grid[$yToTest][$xToTest-1]) && ctype_lower($piece))) ) {
+                            $possibleMoves[] = [$xToTest-1, $yToTest];
+                        }
                     }
-
                     // z.b. Dame: überspringen unterbinden
                     if ($fieldToTest !== '') {
                         break;
                     }
-
                     // Bauer Spielbeginn
                     if ( strtolower($piece) === 'b' && $grid[$yToTest-1][$xToTest] == '' ) {
-                        if ($y == 6) {
+                        if ($y == 6 && $piece === 'B') {
                             $possibleMoves[] = [$xToTest, $yToTest-1];
                         }
-                        if ($y == 1) {
+                        if ($y == 1 && $piece === 'b') {
                             $possibleMoves[] = [$xToTest, $yToTest+1];
                         }
                     }
-
                     // Schleifen Stop für K S B
                     if (strtolower($piece) === 'k' || strtolower($piece) === 's' || strtolower($piece) === 'b') {
                         break;
                     }
-
                     $xToTest = $xToTest + $vector[0];
                     $yToTest = $yToTest + $vector[1];
                 }
             }
-
             return $possibleMoves;
         }
 
@@ -162,13 +146,15 @@
             for($i=0; $i < count($grid); $i++) {
                 foreach($grid[$i] as $key => $field) {
                     if($field !== '') {
-                        $piece = $field;
-                        if( (ctype_lower($turn) && ctype_lower($piece)) || (ctype_upper($turn) && ctype_upper($piece)) ) {
+                        if( (ctype_lower($turn) && ctype_lower($field)) || (ctype_upper($turn) && ctype_upper($field)) ) {
                             //get enemy moves
-                            $possibleMovesEnemy = getPossibleMoves($key, $i, $grid, $turn, $vectors[strtolower($piece)], $vectors, true);
+                            $possibleMovesEnemy = getPossibleMoves($key, $i, $grid, $turn, $vectors[strtolower($field)], $vectors, true);
 
                             //3. field under threat? bool
                             $fieldUnderAttack = coordinateInArray($x,$y, $possibleMovesEnemy);
+                            if ($fieldUnderAttack) {
+                                return true;
+                            }
                         }
                     }
                 }
@@ -176,27 +162,38 @@
             return $fieldUnderAttack;
         }
 
-        // find king funktion schreiben weil ich es jetzt nochmal brauche
-        // aus incheck rauskopieren und dort die funktion hier nutzen
-
-        function inCheck($grid, $turn, $vectors, $piece) {
-            $inCheck = false;
-            for ($i=0; $i < count($grid); $i++) {
-                for ($j=0; $j < count($grid[$i]); $j++) {
-                    if( (ctype_lower($turn) && $grid[$i][$j] === 'k') || (ctype_upper($turn) && $grid[$i][$j] === 'K') ) {
-                      //field underAttack?
-                      $inCheck = fieldUnderAttack($j, $i, $grid, $piece, $vectors);
+        function findKing($grid) {
+            $findKing = [];
+            foreach ($grid as $row => $rows) {
+                foreach ($rows as $col => $cols ) {
+                    if (strtolower($grid[$row][$col]) === 'k'){
+                        $findKing = [$row,$col];
                     }
                 }
             }
+            return $findKing;
+        }
+
+        function inCheck($grid, $turn, $vectors, $piece) {
+            $inCheck = false;
+            $findKing = findKing($grid);
+                if( (ctype_lower($turn) && $grid[$findKing[0]][$findKing[1]] === 'k') || (ctype_upper($turn) && $grid[$findKing[0]][$findKing[1]] === 'K') ) {
+                  //field underAttack?
+                  $inCheck = fieldUnderAttack($findKing[1], $findKing[0], $grid, $piece, $vectors);
+                }
             return $inCheck;
         }
 
-        // find king funktion schreiben und nutzen um checkmate zu schreiben um index anzahl passible moves zu prfüfen.
+        function pawnToQueen($yNew, $grid) {
+            $pawnToQueen = false;
+            if($yNew === 0 || $yNew === 7){
+                $pawnToQueen = true;
+            }
+            return $pawnToQueen;
+        }
 
-
-        /* input handling */
-        $message = "WEISS fängt an";
+        // moving pieces
+        $message = "⚪ Weiss fängt an";
         if(isset($_POST['from'])&&($_POST['to'])) {
             $inputFrom = str_split($_POST['from']);
             $x = $xAxis[strtolower($inputFrom[0])];
@@ -207,8 +204,8 @@
             $yNew = $yAxis[$inputTo[1]];
 
             $piece = $grid[$y][$x];
+            var_dump(pawnToQueen($yNew, $grid));
 
-            /* moving piece */
             if(!empty($piece)) {
                 if( (ctype_lower($turn) && ctype_lower($piece)) || (ctype_upper($turn) && ctype_upper($piece)) ) {
                     $message = "Achtung" . "<br>" . "nicht dein Zug!";
@@ -216,23 +213,32 @@
                     $possibleMoves = getPossibleMoves($x, $y, $grid, $turn, $vectors[strtolower($piece)], $vectors);
                     if (coordinateInArray($xNew, $yNew, $possibleMoves)) {
                         $grid[$y][$x] = '';
-                        $grid[$yNew][$xNew] = $piece;
+                        if(pawnToQueen($yNew, $grid) && $piece == strtolower('b')){
+                            if(ctype_lower($piece)){
+                                $grid[$yNew][$xNew] = 'd';
+                            } else {
+                                $grid[$yNew][$xNew] = 'D';
+                            }
+                        } else {
+                            $grid[$yNew][$xNew] = $piece;
+                        }
 
                         if(ctype_upper($piece)) {
-                            $message = "SCHWARZ am Zug!";
+                            $message = "⚫ Schwarz am Zug!";
                         } else {
-                            $message = "WEISS am Zug!";
+                            $message = "⚪ Weiss am Zug!";
                         }
                         if (inCheck($grid, $turn, $vectors, $piece)) {
-                            if (empty(getPossibleMoves())) {
-                                $message .= ' SCHACH MATT!!!!';
-
+                            $findKing = findKing($grid);
+                            $possibleMoves = getPossibleMoves($findKing[1], $findKing[0], $grid, $piece, $vectors[$grid[$findKing[0]][$findKing[1]]], $vectors);
+                            $menace = fieldUnderAttack($xNew, $yNew, $grid, $turn, $vectors);
+                            if(count($possibleMoves) === 0 && $menace == false ){
+                                $message = '!!! SCHACH MATT !!!';
                             } else {
-                                $message .= ' SCHACH!!!!';
-
+                                $message .= '<br> !!! SCHACH !!!';
                             }
-
                         }
+
                         $game['turn'] = $piece;
                         $game['grid'] = $grid;
                         file_put_contents('grid.txt', json_encode($game, JSON_PRETTY_PRINT));
@@ -250,7 +256,6 @@
             unlink('grid.txt');
         }
 
-        /* chess board loop */
         function showGrid($grid, $pieces) {
             for($i=0; $i <= 7; $i++)
             {
@@ -273,11 +278,9 @@
                     echo '</div>';
                 }
                 echo "</div>";
-
             }
         }
 
-        /* grid load */
         showGrid($grid, $UnicodePieces);
 
         ?>
