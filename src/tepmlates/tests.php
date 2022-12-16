@@ -30,9 +30,37 @@
                 }
         }
 
+        function testFindKing(){
+            $initGame = [
+                'grid' => [
+                    ['','','','b','k','b','',''],
+                    ['B','','','b','b','b','',''],
+                    ['','','','','','','',''],
+                    ['','','','k','','S','',''],
+                    ['','','','','','','',''],
+                    ['','','','K','','','s',''],
+                    ['b','','','','','B','B',''],
+                    ['','','','','','','',''],
+                ],
+                'white' => true,
+            ];
+            $testGrid = $initGame['grid'];
+            $findKing = [];
+            foreach ($testGrid as $row => $rows){
+                foreach ($rows as $col => $cols) {
+                    if(strtolower($col) === 'k'){
+                        $findKing = [$row, $col];
+                    }
+                }
+                return $findKing;
+            }
+        }
+
+        // TESTING all functions
         if (isset($_GET['test']) && $_GET['test'] == 1) {
             testCoordinateInArray();
             testPawnToQueen();
+            testFindKing();
         }
 
         ?>
