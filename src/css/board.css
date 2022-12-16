@@ -7,9 +7,9 @@ body {
 }
 .board {
     display: flex;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    min-height: 100vh;
+    width: 700px;
 }
 .rownum {
     width: 10px;

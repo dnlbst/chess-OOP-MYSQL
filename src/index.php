@@ -8,6 +8,7 @@
 <body>
     <?php
         include('tepmlates/board.php');
+        include('tepmlates/tests.php');
 
         echo "<div class='input'>
                 <h4>{$message}</h4>
