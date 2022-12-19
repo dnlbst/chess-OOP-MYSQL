@@ -23,7 +23,7 @@
                 ['','','','b','k','b','',''],
                 ['B','','','b','b','b','',''],
                 ['','','','','','','',''],
-                ['','','','k','','S','',''],
+                ['','','','','','S','',''],
                 ['','','','','','','',''],
                 ['','','','K','','','s',''],
                 ['b','','','','','B','B',''],
@@ -143,18 +143,22 @@
             return false;
         }
 
+        // wird aktuell für 2 usecases genutzt:
+        // 1. darf der König auf ein Feld ziehen 2. steht der König nach einem Zug unter Schach
+        // 1. weiss true könig prüft alle Felder von schwarz 2. weiß läuft und prüft ob von der neuen pos nun der schwarze König unter schach steht.
+        // 1. weiss prüft auf schwarz 2. weiss prüft auf schwarz
         function fieldUnderAttack($x, $y, $grid, $white, $vectors) {
             $fieldUnderAttack = false;
             //1. get all enemys
-            for($i=0; $i < count($grid); $i++) {
-                foreach($grid[$i] as $key => $field) {
-                    if($field !== '') {
-                        if( (!$white && ctype_lower($field)) || ($white && ctype_upper($field)) ) {
+            for($i = 0; $i < count($grid); $i++) {
+                for($j = 0; $j < count($grid[$i]); $j++) {
+                    if($grid[$i][$j] !== '') {
+                        if( ($white && ctype_lower($grid[$i][$j])) || (!$white && ctype_upper($grid[$i][$j])) ) {
                             //get enemy moves
-                            $possibleMovesEnemy = getPossibleMoves($key, $i, $grid, $white, $vectors[strtolower($field)], $vectors, true);
-
+                            $possibleMovesEnemy = getPossibleMoves($j, $i, $grid, $white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
                             //3. field under threat? bool
-                            $fieldUnderAttack = coordinateInArray($x,$y, $possibleMovesEnemy);
+                            $fieldUnderAttack = coordinateInArray($x, $y, $possibleMovesEnemy);
+                            var_dump($fieldUnderAttack);
                             if ($fieldUnderAttack) {
                                 return true;
                             }
@@ -167,23 +171,31 @@
 
         function findKing($grid) {
             $findKing = [];
-            foreach ($grid as $row => $rows) {
-                foreach ($rows as $col => $cols ) {
-                    if (strtolower($grid[$row][$col]) === 'k'){
-                        $findKing = [$row,$col];
+            for($i = 0; $i < count($grid); $i++) {
+                for($j=0; $j < count($grid[$i]); $j++) {
+                    if (strtolower($grid[$i][$j]) === 'k'){
+                        $findKing[] = [$i,$j];
                     }
                 }
             }
             return $findKing;
         }
 
+
+
         function inCheck($grid, $white, $vectors, $piece) {
             $inCheck = false;
-            $findKing = findKing($grid);
-                if( (!$white && $grid[$findKing[0]][$findKing[1]] === 'k') || ($white && $grid[$findKing[0]][$findKing[1]] === 'K') ) {
-                  //field underAttack?
-                  $inCheck = fieldUnderAttack($findKing[1], $findKing[0], $grid, $piece, $vectors);
+            $findKing[] = findKing($grid);
+            foreach ($findKing as $kings){
+                foreach ($kings as $king){
+                    if( ($white && $grid[$king[0]][$king[1]] === 'k') || (!$white && $grid[$king[0]][$king[1]] === 'K') ) {
+                        //field underAttack?
+                        var_dump($king[0]);
+                        var_dump($king[1]);
+                        $inCheck = fieldUnderAttack($king[0], $king[1], $grid, $piece, $vectors);
+                    }
                 }
+            }
             return $inCheck;
         }
 

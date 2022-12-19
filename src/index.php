@@ -14,9 +14,9 @@
                 <h4>{$message}</h4>
                 <form action='' method='post'>
                     <label for='from'>from</label>
-                    <input type='text' id='from' name='from' maxlength='2' placeholder='' autofocus>
+                    <input type='text' id='from' name='from' maxlength='2' value='f5' autofocus>
                     <label for='to'>to</label>
-                    <input type='text' id='to' name='to' maxlength='2' placeholder='' >
+                    <input type='text' id='to' name='to' maxlength='2' value='d6' ' >
                     <input type='submit' value='Submit'>
                     <label for='reset'></label>
                     <input id='reset' type='submit' name='reset' value='Reset'>

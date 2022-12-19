@@ -31,36 +31,34 @@
         }
 
         function testFindKing(){
-            $initGame = [
-                'grid' => [
-                    ['','','','b','k','b','',''],
-                    ['B','','','b','b','b','',''],
-                    ['','','','','','','',''],
-                    ['','','','k','','S','',''],
-                    ['','','','','','','',''],
-                    ['','','','K','','','s',''],
-                    ['b','','','','','B','B',''],
-                    ['','','','','','','',''],
-                ],
-                'white' => true,
+            $testGrid = [
+                'kings' =>  [
+                        ['','k',''],
+                        ['','K',''],
+                    ],
             ];
-            $testGrid = $initGame['grid'];
-            $findKing = [];
-            foreach ($testGrid as $row => $rows){
-                foreach ($rows as $col => $cols) {
-                    if(strtolower($col) === 'k'){
-                        $findKing = [$row, $col];
-                    }
-                }
-                return $findKing;
+            $testKings = $testGrid['kings'];
+            $result = findKing($testKings);
+            foreach ($result as $testKing){
+                echo ' - ' . $testKings[$testKing[0]][$testKing[1]] . ' - ' ;
             }
+
+        }
+
+        function testFieldUnderAttack(){
+            $testUnderAttack = false;
+            $result = fieldUnderAttack();
+
+            return $testUnderAttack;
         }
 
         // TESTING all functions
         if (isset($_GET['test']) && $_GET['test'] == 1) {
+
             testCoordinateInArray();
             testPawnToQueen();
             testFindKing();
+//            testFieldUnderAttack();
         }
 
         ?>
