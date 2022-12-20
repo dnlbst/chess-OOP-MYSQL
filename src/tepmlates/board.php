@@ -36,18 +36,7 @@
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
             'k' => '&#x265A;','d' => '&#x265B;', 't' => '&#x265C;', 'l' => '&#x265D;', 's' => '&#x265E;', 'b' => '&#x265F;'
         ];
-        /* COL */
-        $xAxis = [
-            'a' => 0,
-            'b' => 1,
-            'c' => 2,
-            'd' => 3,
-            'e' => 4,
-            'f' => 5,
-            'g' => 6,
-            'h' => 7,
-        ];
-        /* ROW */
+        /* 1. ROW */
         $yAxis = [
             '1' => 7,
             '2' => 6,
@@ -58,6 +47,17 @@
             '7' => 1,
             '8' => 0,
         ];
+        /* 2. COL */
+        $xAxis = [
+            'a' => 0,
+            'b' => 1,
+            'c' => 2,
+            'd' => 3,
+            'e' => 4,
+            'f' => 5,
+            'g' => 6,
+            'h' => 7,
+        ];
         /* valid moves */
         $vectors = [
             'k' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
@@ -65,7 +65,7 @@
             't' => [[-1,0],[0,1],[1,0],[0,-1]],
             'l' => [[-1,-1],[-1,1],[1,-1],[1,1]],
             's' => [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2],[-1,-2]],
-            'b' => [[0,-1]],
+            'b' => [[-1,0]],
         ];
 
         /* save file */
@@ -83,7 +83,7 @@
         /* move validaion */
 //        x = col
 //        y = row
-        function getPossibleMoves($x,$y, $grid, $white, $vectors, $allVectors, $menace = false) {
+        function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $menace = false) {
             $piece = $grid[$y][$x];
             $possibleMoves = [];
             foreach ($vectors as $vector) {
@@ -91,26 +91,26 @@
                     $vector[0] *= -1;
                     $vector[1] *= -1;
                 }
-                $xToTest = $x + $vector[0];
-                $yToTest = $y + $vector[1];
+                $yToTest = $y + $vector[0];
+                $xToTest = $x + $vector[1];
                 while ($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7){
                     $fieldToTest = $grid[$yToTest][$xToTest];
                     if( $fieldToTest === '' || (!$white && ctype_upper($fieldToTest) && $piece !== 'b') || ($white && ctype_lower($fieldToTest) && $piece !== 'B' )
                     ) {
                         if (strtolower($piece) === 'k' && $menace === false) {
-                            if ( (!fieldUnderAttack($xToTest, $yToTest, $grid, $white, $allVectors)) ) {
-                                $possibleMoves[] = [$xToTest, $yToTest];
+                            if ( (!fieldUnderAttack($yToTest, $xToTest, $grid, $white, $allVectors)) ) {
+                                $possibleMoves[] = [$yToTest, $xToTest];
                             }
                         } else {
-                            $possibleMoves[] = [$xToTest, $yToTest];
+                            $possibleMoves[] = [$yToTest, $xToTest];
                         }
                     }
                     if (strtolower($piece) === 'b') {
                         if ($xToTest+1 <= 7 && ((ctype_lower($grid[$yToTest][$xToTest+1]) && ctype_upper($piece)) || (ctype_lower($piece) && ctype_upper($grid[$yToTest][$xToTest+1]))) ){
-                            $possibleMoves[] = [$xToTest+1, $yToTest];
+                            $possibleMoves[] = [$yToTest, $xToTest+1];
                         }
                         if ($xToTest-1 >= 0 && ((ctype_lower($grid[$yToTest][$xToTest-1]) && ctype_upper($piece)) || (ctype_upper($grid[$yToTest][$xToTest-1]) && ctype_lower($piece))) ) {
-                            $possibleMoves[] = [$xToTest-1, $yToTest];
+                            $possibleMoves[] = [$yToTest, $xToTest-1];
                         }
                     }
                     // z.b. Dame: überspringen unterbinden
@@ -120,18 +120,18 @@
                     // Bauer Spielbeginn
                     if (strtolower($piece) === 'b') {
                         if ($y === 6 && $piece === 'B') {
-                            $possibleMoves[] = [$xToTest, $yToTest-1];
+                            $possibleMoves[] = [$yToTest-1, $xToTest];
                         }
                         if ($y == 1 && $piece === 'b') {
-                            $possibleMoves[] = [$xToTest, $yToTest+1];
+                            $possibleMoves[] = [$yToTest+1, $xToTest];
                         }
                     }
                     // Schleifen Stop für K S B
                     if (strtolower($piece) === 'k' || strtolower($piece) === 's' || strtolower($piece) === 'b') {
                         break;
                     }
-                    $xToTest = $xToTest + $vector[0];
-                    $yToTest = $yToTest + $vector[1];
+                    $yToTest = $yToTest + $vector[0];
+                    $xToTest = $xToTest + $vector[1];
                 }
             }
             return $possibleMoves;
@@ -139,9 +139,9 @@
 
         //        x = col
         //        y = row
-        function coordinateInArray($x,$y, $coordinates) {
+        function coordinateInArray($y, $x, $coordinates) {
             foreach ($coordinates as $coordinate) {
-                if ($coordinate[0] == $x && $coordinate[1] == $y) {
+                if ($coordinate[0] == $y && $coordinate[1] == $x) {
                     return true;
                 }
             }
@@ -154,17 +154,18 @@
         // 1. weiss prüft auf schwarz 2. weiss prüft auf schwarz
         //        x = col
         //        y = row
-        function fieldUnderAttack($x, $y, $grid, $white, $vectors) {
+        function fieldUnderAttack($y, $x, $grid, $white, $vectors) {
             $fieldUnderAttack = false;
             //1. get all enemys
+            //array[0]-row-y-$i & array[1]-col-x-$j
             for($i = 0; $i < count($grid); $i++) {
                 for($j = 0; $j < count($grid[$i]); $j++) {
                     if($grid[$i][$j] !== '') {
                         if( ($white && ctype_lower($grid[$i][$j])) || (!$white && ctype_upper($grid[$i][$j])) ) {
                             //get enemy moves
-                            $possibleMovesEnemy = getPossibleMoves($j, $i, $grid, $white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
+                            $possibleMovesEnemy = getPossibleMoves($i,$j, $grid, $white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
                             //3. field under threat? bool
-                            $fieldUnderAttack = coordinateInArray($x, $y, $possibleMovesEnemy);
+                            $fieldUnderAttack = coordinateInArray($y,$x, $possibleMovesEnemy);
                             var_dump($fieldUnderAttack);
                             if ($fieldUnderAttack) {
                                 return true;
@@ -220,6 +221,7 @@
         $message = "⚪ Weiss fängt an";
         if(isset($_POST['from'])&&($_POST['to'])) {
             $inputFrom = str_split($_POST['from']);
+            //A2 = A-x-col / 2-y-row
             $x = $xAxis[strtolower($inputFrom[0])];
             $y = $yAxis[$inputFrom[1]];
 
@@ -232,8 +234,8 @@
                 if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
                     $message = "Achtung" . "<br>" . "nicht dein Zug!";
                 } else {
-                    $possibleMoves = getPossibleMoves($x, $y, $grid, $white, $vectors[strtolower($piece)], $vectors);
-                    if (coordinateInArray($xNew, $yNew, $possibleMoves)) {
+                    $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors);
+                    if (coordinateInArray($yNew, $xNew, $possibleMoves)) {
                         $grid[$y][$x] = '';
                         if(pawnToQueen($yNew) && strtolower($piece) === 'b'){
                             if(ctype_lower($piece)){
@@ -254,8 +256,8 @@
                         //        y = row
                         if (inCheck($grid, $white, $vectors, $piece)) {
                             $findKing = findKing($grid);
-                            $possibleMoves = getPossibleMoves($findKing[1], $findKing[0], $grid, $piece, $vectors[$grid[$findKing[0]][$findKing[1]]], $vectors);
-                            $menace = fieldUnderAttack($xNew, $yNew, $grid, $white, $vectors);
+                            $possibleMoves = getPossibleMoves($findKing[0], $findKing[1], $grid, $piece, $vectors[$grid[$findKing[0]][$findKing[1]]], $vectors);
+                            $menace = fieldUnderAttack($yNew, $xNew, $grid, $white, $vectors);
                             if(count($possibleMoves) === 0 && $menace == false ){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
