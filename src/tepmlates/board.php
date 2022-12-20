@@ -36,7 +36,7 @@
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
             'k' => '&#x265A;','d' => '&#x265B;', 't' => '&#x265C;', 'l' => '&#x265D;', 's' => '&#x265E;', 'b' => '&#x265F;'
         ];
-        /* X & Y Axis Translation */
+        /* COL */
         $xAxis = [
             'a' => 0,
             'b' => 1,
@@ -47,6 +47,7 @@
             'g' => 6,
             'h' => 7,
         ];
+        /* ROW */
         $yAxis = [
             '1' => 7,
             '2' => 6,
@@ -80,6 +81,8 @@
         }
 
         /* move validaion */
+//        x = col
+//        y = row
         function getPossibleMoves($x,$y, $grid, $white, $vectors, $allVectors, $menace = false) {
             $piece = $grid[$y][$x];
             $possibleMoves = [];
@@ -134,6 +137,8 @@
             return $possibleMoves;
         }
 
+        //        x = col
+        //        y = row
         function coordinateInArray($x,$y, $coordinates) {
             foreach ($coordinates as $coordinate) {
                 if ($coordinate[0] == $x && $coordinate[1] == $y) {
@@ -147,6 +152,8 @@
         // 1. darf der König auf ein Feld ziehen 2. steht der König nach einem Zug unter Schach
         // 1. weiss true könig prüft alle Felder von schwarz 2. weiß läuft und prüft ob von der neuen pos nun der schwarze König unter schach steht.
         // 1. weiss prüft auf schwarz 2. weiss prüft auf schwarz
+        //        x = col
+        //        y = row
         function fieldUnderAttack($x, $y, $grid, $white, $vectors) {
             $fieldUnderAttack = false;
             //1. get all enemys
@@ -190,8 +197,8 @@
                 foreach ($kings as $king){
                     if( ($white && $grid[$king[0]][$king[1]] === 'k') || (!$white && $grid[$king[0]][$king[1]] === 'K') ) {
                         //field underAttack?
-                        var_dump($king[0]);
-                        var_dump($king[1]);
+                        echo ' king[0]-y-row = '.$king[0];
+                        echo ' king[1]-x-col = '.$king[1].' ';
                         $inCheck = fieldUnderAttack($king[0], $king[1], $grid, $piece, $vectors);
                     }
                 }
@@ -207,6 +214,8 @@
             return $pawnToQueen;
         }
 
+        //        x = col
+        //        y = row
         // moving pieces
         $message = "⚪ Weiss fängt an";
         if(isset($_POST['from'])&&($_POST['to'])) {
@@ -241,6 +250,8 @@
                         } else {
                             $message = "⚪ Weiss am Zug!";
                         }
+                        //        x = col
+                        //        y = row
                         if (inCheck($grid, $white, $vectors, $piece)) {
                             $findKing = findKing($grid);
                             $possibleMoves = getPossibleMoves($findKing[1], $findKing[0], $grid, $piece, $vectors[$grid[$findKing[0]][$findKing[1]]], $vectors);
