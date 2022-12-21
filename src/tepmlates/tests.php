@@ -40,7 +40,7 @@
             $testKings = $testGrid['kings'];
             $result = findKing($testKings);
             foreach ($result as $testKing){
-                echo ' - ' . $testKings[$testKing[0]][$testKing[1]] . ' - ' ;
+                echo ' - find King works: ' . $testKings[$testKing[0]][$testKing[1]] . ' - ' ;
             }
 
         }
@@ -52,11 +52,14 @@
             return $testUnderAttack;
         }
 
+//$result = fieldUnderAttack(4,5,$grid, false, $vectors);
+//var_dump($result);
+
         // TESTING all functions
         if (isset($_GET['test']) && $_GET['test'] == 1) {
 
-            testCoordinateInArray();
-            testPawnToQueen();
+//            testCoordinateInArray();
+//            testPawnToQueen();
             testFindKing();
 //            testFieldUnderAttack();
         }
