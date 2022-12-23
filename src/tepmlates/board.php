@@ -20,31 +20,32 @@
 
 //        $initGame = [
 //            'grid' => [
-//                ['','','','b','k','b','',''],
-//                ['B','','','b','','b','',''],
+//                ['','','','l','k','b','',''],
+//                ['','','','','l','b','',''],
+//                ['D','','','','','','',''],
+//                ['','','l','','','','',''],
+//                ['d','','','','','','',''],
 //                ['','','','','','','',''],
-//                ['','','','','','S','',''],
-//                ['','','','','','','',''],
-//                ['','','','K','','','s',''],
-//                ['b','','','','','B','B',''],
-//                ['','','','','','','',''],
+//                ['','','','','L','B','',''],
+//                ['','','','L','K','B','',''],
 //            ],
-//            'white' => true,
+//            'white' => false,
 //        ];
 
         $initGame = [
             'grid' => [
-                ['l','','','b','k','b','',''],
-                ['','','','','t','b','',''],
+                ['','','','l','k','b','',''],
+                ['','','','','l','b','',''],
                 ['','','','','','','',''],
+                ['','','l','','D','','',''],
+                ['t','','','','','','',''],
                 ['','','','','','','',''],
-                ['','','D','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
+                ['','','','B','B','B','',''],
+                ['','','','','K','','',''],
             ],
-            'white' => true,
+            'white' => false,
         ];
+
 
         /* Unicode Chess Pieces */
         $UnicodePieces = [
@@ -127,8 +128,8 @@
                             $possibleMoves[] = [$yToTest, $xToTest - 1];
                         }
                     }
-                    // z.b. Dame: überspringen unterbinden
-                    if ($fieldToTest !== '') {
+                    // z.b. Dame: überspringen unterbinden es sei denn König steht unter Schach
+                    if ($fieldToTest !== '' && strtolower($fieldToTest) !== 'k') {
                         break;
                     }
                     // Bauer Spielbeginn
@@ -209,6 +210,28 @@
             return $inCheck;
         }
 
+        function offCheck($grid, $white, $vectors) {
+            $offCheck = false;
+            $simulationGrid = $grid;
+            for($i = 0; $i < count($grid); $i++) {
+                for($j=0; $j < count($grid[$i]); $j++) {
+                    if ( ($grid[$i][$j] !== '') && (strtolower($grid[$i][$j]) !== 'k') ){
+                        if( (!$white && ctype_upper($grid[$i][$j])) || ($white && ctype_lower($grid[$i][$j])) ) {
+                            $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
+                            foreach ($possibleMovesCompanions as $moveCompanions){
+                                $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
+                                if(!inCheck($simulationGrid, !$white, $vectors)){
+                                    $offCheck = true;
+                                    return $offCheck;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return $offCheck;
+        }
+
         function pawnToQueen($yNew) {
             $pawnToQueen = false;
             if($yNew === 0 || $yNew === 7){
@@ -217,14 +240,14 @@
             return $pawnToQueen;
         }
 
-        //ich hab die possible moves der Dame und ich kann auf diese Felder wieder ein field under attach prüfen
-        //foreach possible moves ein fieldunderattack prüfen
-
-
         //        x = col
         //        y = row
         // moving pieces
-        $message = "⚪ Weiss fängt an";
+        if($initGame['white']){
+            $message = "⚪ Weiss fängt an";
+        } else {
+            $message = "⚫ initGame['white'] = false";
+        }
         if(isset($_POST['from'])&&($_POST['to'])) {
             $inputFrom = str_split($_POST['from']);
             //A2 = A-x-col / 2-y-row
@@ -264,9 +287,9 @@
                         //        y = row
                         if (inCheck($grid, $white, $vectors)) {
                             $king = findKing($grid, $white);
-                            $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[$grid[$king[0]][$king[1]]], $vectors);
+                            $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
-                            if(count($possibleMovesKing) === 0 && $menace == false ){
+                            if(count($possibleMovesKing) === 0 && $menace == false && !offCheck($grid, !$white, $vectors)){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
                                 $message .= '<br> !!! SCHACH !!!';
