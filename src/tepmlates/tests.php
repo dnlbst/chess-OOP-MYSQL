@@ -15,20 +15,20 @@
             }
         }
 
-        function testPawnToQueen(){
-            $result = pawnToQueen(0);
-                if ($result){
-                    echo " - pawnToQueen 0 works";
-                }
-            $result = pawnToQueen(7);
-                if ($result){
-                    echo " - pawnToQueen 7 works";
-                }
-            $result = pawnToQueen(1);
-                if ($result === false){
-                    echo " - pawnToQueen 1=false works";
-                }
-        }
+//        function testPawnToQueen(){
+//            $result = pawnToQueen(0, $xNew, $grid);
+//                if ($result){
+//                    echo " - pawnToQueen 0 works";
+//                }
+//            $result = pawnToQueen(7);
+//                if ($result){
+//                    echo " - pawnToQueen 7 works";
+//                }
+//            $result = pawnToQueen(1);
+//                if ($result === false){
+//                    echo " - pawnToQueen 1=false works";
+//                }
+//        }
 
         function testFindKing(){
             $testGrid = [
