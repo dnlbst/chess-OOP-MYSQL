@@ -3,7 +3,6 @@
 
         <?php
 
-        /* initial grid array */
 //        $initGame = [
 //            'grid' => [
 //                ['t','l','s','d','k','s','l','t'],
@@ -48,24 +47,28 @@
 
         $initGame = [
             'grid' => [
-                ['t','','','','k','','','t'],
+                ['t','','','k','','','','t'],
                 ['','','','','','','',''],
+                ['','s','','','','','',''],
+                ['','','T','','','','S',''],
                 ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
+                ['','','','','','','','l'],
                 ['','','','','','','',''],
                 ['T','','','','K','','','T'],
             ],
             'white' => true,
+            'check' => [false, false],
+            'rochadeFirstMoves' => [
+                [true,true,true],
+                [true,true,true],
+            ],
         ];
 
-        /* Unicode Chess Pieces */
         $UnicodePieces = [
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
             'k' => '&#x265A;','d' => '&#x265B;', 't' => '&#x265C;', 'l' => '&#x265D;', 's' => '&#x265E;', 'b' => '&#x265F;'
         ];
-        /* 1. ROW */
+
         $yAxis = [
             '1' => 7,
             '2' => 6,
@@ -76,7 +79,7 @@
             '7' => 1,
             '8' => 0,
         ];
-        /* 2. COL */
+
         $xAxis = [
             'a' => 0,
             'b' => 1,
@@ -87,7 +90,7 @@
             'g' => 6,
             'h' => 7,
         ];
-        /* valid moves */
+
         $vectors = [
             'k' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
             'd' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
@@ -97,27 +100,21 @@
             'b' => [[-1,0]],
         ];
 
-        /* Rochade */
-        $rochadeFirstMoves = [
-            [true,true,true],
-            [true,true,true],
-        ];
-
-        /* save file */
         if(file_exists('grid.txt')) {
             $file = file_get_contents('grid.txt', true);
             $game = json_decode($file, true);
             $grid = $game['grid'];
             $white = $game['white'];
+            $check = $game['check'];
+            $rochadeFirstMoves = $game['rochadeFirstMoves'];
         } else {
             file_put_contents('grid.txt', json_encode($initGame, JSON_PRETTY_PRINT));
             $grid = $initGame['grid'];
             $white = $initGame['white'];
+            $check = $initGame['check'];
+            $rochadeFirstMoves = $initGame['rochadeFirstMoves'];
         }
 
-        /* move validaion */
-//        x = col
-//        y = row
         function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $menace = false) {
             $piece = $grid[$y][$x];
             $possibleMoves = [];
@@ -171,8 +168,6 @@
             return $possibleMoves;
         }
 
-        //        x = col
-        //        y = row
         function coordinateInArray($y, $x, $coordinates) {
             foreach ($coordinates as $coordinate) {
                 if ($coordinate[0] == $y && $coordinate[1] == $x) {
@@ -182,9 +177,6 @@
             return false;
         }
 
-        // 2 Usecases:
-        //        x = col
-        //        y = row
         function fieldUnderAttack($y, $x, $grid, $white, $vectors) {
             $fieldUnderAttack = false;
             //1. get all enemys
@@ -259,31 +251,28 @@
             return $pawnToQueen;
         }
 
-        function rochadeFirstMoveTrigger($rochadeFirstMoves, $grid){
-            if($grid[0][0] === ''){
-                $rochadeFirstMoves[0][0] = false;
-            }
-            if($grid[0][4] === ''){
-                $rochadeFirstMoves[0][1] = false;
-            }
-            if($grid[0][7] === ''){
-                $rochadeFirstMoves[0][2] = false;
-            }
-            if($grid[7][0] === ''){
-                $rochadeFirstMoves[1][0] = false;
-            }
-            if($grid[7][4] === ''){
-                $rochadeFirstMoves[1][1] = false;
-            }
-            if($grid[7][7] === ''){
-                $rochadeFirstMoves[2][2] = false;
-            }
-            return $rochadeFirstMoves;
-        }
+//        function rochadeFirstMoveTrigger($rochadeFirstMoves, $grid){
+//            if($grid[0][0] === ''){
+//                $rochadeFirstMoves[0][0] = false;
+//            }
+//            if($grid[0][4] === ''){
+//                $rochadeFirstMoves[0][1] = false;
+//            }
+//            if($grid[0][7] === ''){
+//                $rochadeFirstMoves[0][2] = false;
+//            }
+//            if($grid[7][0] === ''){
+//                $rochadeFirstMoves[1][0] = false;
+//            }
+//            if($grid[7][4] === ''){
+//                $rochadeFirstMoves[1][1] = false;
+//            }
+//            if($grid[7][7] === ''){
+//                $rochadeFirstMoves[2][2] = false;
+//            }
+//            return $rochadeFirstMoves;
+//        }
 
-        //        x = col
-        //        y = row
-        // moving pieces
         if($initGame['white']){
             $message = "⚪ Weiss fängt an";
         } else {
@@ -300,16 +289,15 @@
             $yNew = $yAxis[$inputTo[1]];
 
             $piece = $grid[$y][$x];
-
             if(!empty($piece)) {
                 if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
                     $message = "Achtung" . "<br>" . "nicht dein Zug!";
                 } else {
                     $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors);
-                    if ((strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't') || coordinateInArray($yNew, $xNew, $possibleMoves) ) {
-
+                    if (coordinateInArray($yNew, $xNew, $possibleMoves)) {
 
                         $grid[$y][$x] = '';
+
                         if(pawnToQueen($yNew) && strtolower($piece) === 'b'){
                             if(ctype_lower($piece)){
                                 $grid[$yNew][$xNew] = 'd';
@@ -318,7 +306,6 @@
                             }
                         } else {
                             $grid[$yNew][$xNew] = $piece;
-                            rochadeFirstMoveTrigger($rochadeFirstMoves, $grid);
                         }
 
                         if(ctype_upper($piece)) {
@@ -328,26 +315,47 @@
                         }
 
                         $white = !$white;
-                        //        x = col
-                        //        y = row
                         if (inCheck($grid, $white, $vectors)) {
                             $king = findKing($grid, $white);
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
+                            var_dump($offCheckMoves);
                             if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
-//                                var_dump($offCheckMoves);
+                                if($white){
+                                    $check[1] = true;
+                                } else {
+                                    $check[0] = true;
+                                }
                                 $message .= '<br> !!! SCHACH !!!';
                             }
                         }
-
-                        $game['white'] = $white;
+                        if($grid[0][0] === ''){
+                            $rochadeFirstMoves[0][0] = false;
+                        }
+                        if($grid[0][4] === ''){
+                            $rochadeFirstMoves[0][1] = false;
+                        }
+                        if($grid[0][7] === ''){
+                            $rochadeFirstMoves[0][2] = false;
+                        }
+                        if($grid[7][0] === ''){
+                            $rochadeFirstMoves[1][0] = false;
+                        }
+                        if($grid[7][4] === ''){
+                            $rochadeFirstMoves[1][1] = false;
+                        }
+                        if($grid[7][7] === ''){
+                            $rochadeFirstMoves[2][2] = false;
+                        }
                         $game['grid'] = $grid;
+                        $game['white'] = $white;
+                        $game['check'] = $check;
+                        $game['rochadeFirstMoves'] = $rochadeFirstMoves;
                         file_put_contents('grid.txt', json_encode($game, JSON_PRETTY_PRINT));
-                        var_dump($piece);
-                        var_dump($grid[$yNew][$xNew]);
+
                     } elseif ( strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
                         if($piece === 'k' && ($yNew === 0 && $xNew === 0)){
                             if($rochadeFirstMoves[0][1] === true && $rochadeFirstMoves[0][0] === true){
@@ -362,10 +370,12 @@
                                             $grid[0][3] = 't';
                                             $message = "kurze Rochade gezogen" . "<br>" . "⚪ Weiss am Zug!";
                                         } else {
-                                            $message = "Rochade ungültig";
+                                            $message = "Felder des Königs bedroht";
                                         }
                                     }
                                 }
+                            } else {
+                                $message = "König od. Turm schon gezogen";
                             }
                         }
                         if($piece === 'k' && ($yNew === 0 && $xNew === 7)){
@@ -381,14 +391,15 @@
                                             $grid[0][5] = 't';
                                             $message = "lange Rochade gezogen" . "<br>" . "⚪ Weiss am Zug!";
                                         } else {
-                                            $message = "Rochade ungültig";
+                                            $message = "Felder des Königs bedroht";
                                         }
                                     }
                                 }
+                            }else {
+                                $message = "König od. Turm schon gezogen";
                             }
                         }
-                        if($piece === 'k' && ($yNew === 7 && $xNew === 0)){
-                            var_dump(' - hello if k 7&0 - ');
+                        if($piece === 'K' && ($yNew === 7 && $xNew === 0)){
                             if($rochadeFirstMoves[1][1] === true && $rochadeFirstMoves[1][0] === true){
                                 $rochadeCoordinates = [[7,1],[7,2],[7,3]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
@@ -397,35 +408,80 @@
                                             fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors) === false){
                                             $grid[7][4] = '';
                                             $grid[7][0] = '';
-                                            $grid[7][2] = 'k';
-                                            $grid[7][3] = 't';
+                                            $grid[7][2] = 'K';
+                                            $grid[7][3] = 'T';
                                             $message = "kurze Rochade gezogen" . "<br>" . "⚫ Schwarz am Zug!";
                                         } else {
-                                            $message = "Rochade ungültig";
+                                            $message = "Felder des Königs bedroht";
                                         }
                                     }
                                 }
+                            } else {
+                                $message = "König od. Turm schon gezogen";
                             }
                         }
-                        if($piece === 'k' && ($yNew === 7 && $xNew === 7)){
+                        if($piece === 'K' && ($yNew === 7 && $xNew === 7)){
                             if($rochadeFirstMoves[1][1] === true && $rochadeFirstMoves[1][2] === true){
                                 $rochadeCoordinates = [[7,5],[7,6]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
                                     if($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] === '' ){
-                                        if( fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false &&
-                                            fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors) === false){
+                                        if( fieldUnderAttack($rochadeCoordinates[0][0],$rochadeCoordinates[0][1], $grid, $white, $vectors) === false &&
+                                            fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false){
                                             $grid[7][4] = '';
                                             $grid[7][7] = '';
-                                            $grid[7][6] = 'k';
-                                            $grid[7][5] = 't';
+                                            $grid[7][6] = 'K';
+                                            $grid[7][5] = 'T';
                                             $message = "lange Rochade gezogen" . "<br>" . "⚫ Schwarz am Zug!";
                                         } else {
-                                            $message = "Rochade ungültig";
+                                            $message = "Felder des Königs bedroht";
                                         }
                                     }
                                 }
+                            } else {
+                                $message = "König od. Turm schon gezogen";
                             }
                         }
+                        $white = !$white;
+                        if (inCheck($grid, $white, $vectors)) {
+                            $king = findKing($grid, $white);
+                            $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
+                            $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
+                            $offCheckMoves = offCheck($grid, !$white, $vectors);
+                            var_dump($offCheckMoves);
+                            if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
+                                $message = '!!! SCHACH MATT !!!';
+                            } else {
+                                if($white){
+                                    $check[1] = true;
+                                } else {
+                                    $check[0] = true;
+                                }
+                                $message .= '<br> !!! SCHACH !!!';
+                            }
+                        }
+                        if($grid[0][0] === ''){
+                            $rochadeFirstMoves[0][0] = false;
+                        }
+                        if($grid[0][4] === ''){
+                            $rochadeFirstMoves[0][1] = false;
+                        }
+                        if($grid[0][7] === ''){
+                            $rochadeFirstMoves[0][2] = false;
+                        }
+                        if($grid[7][0] === ''){
+                            $rochadeFirstMoves[1][0] = false;
+                        }
+                        if($grid[7][4] === ''){
+                            $rochadeFirstMoves[1][1] = false;
+                        }
+                        if($grid[7][7] === ''){
+                            $rochadeFirstMoves[2][2] = false;
+                        }
+                        $game['grid'] = $grid;
+                        $game['white'] = $white;
+                        $game['check'] = $check;
+                        $game['rochadeFirstMoves'] = $rochadeFirstMoves;
+                        file_put_contents('grid.txt', json_encode($game, JSON_PRETTY_PRINT));
                     } else {
                         $message = "!! Zug ungültig !!";
                     }
