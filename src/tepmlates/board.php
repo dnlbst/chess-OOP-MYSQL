@@ -15,8 +15,14 @@
 //                ['T','L','S','D','K','S','L','T'],
 //            ],
 //            'white' => true,
+//            'check' => [false, false],
+//            'rochadeFirstMoves' => [
+//                [true,true,true],
+//                [true,true,true],
+//            ],
 //        ];
 
+        /* Schach */
 //        $initGame = [
 //            'grid' => [
 //                ['','','','l','k','b','',''],
@@ -29,40 +35,73 @@
 //                ['','','','L','K','B','',''],
 //            ],
 //            'white' => false,
-//        ];
-
-//        $initGame = [
-//            'grid' => [
-//                ['','','','l','k','b','',''],
-//                ['','','','','l','b','',''],
-//                ['','','','','','','',''],
-//                ['','','l','','','D','',''],
-//                ['t','','','','','','',''],
-//                ['','','','','','','',''],
-//                ['','','','B','B','B','',''],
-//                ['','','','','K','','',''],
+//            'check' => [false, false],
+//            'rochadeFirstMoves' => [
+//                [true,true,true],
+//                [true,true,true],
 //            ],
-//            'white' => false,
+//
 //        ];
 
+        /* Schach Matt */
         $initGame = [
             'grid' => [
-                ['t','','','k','','','','t'],
+                ['','','','l','k','b','',''],
+                ['','','','','l','b','',''],
                 ['','','','','','','',''],
-                ['','s','','','','','',''],
-                ['','','T','','','','S',''],
+                ['','','l','','','','',''],
                 ['','','','','','','',''],
-                ['','','','','','','','l'],
-                ['','','','','','','',''],
-                ['T','','','','K','','','T'],
+                ['t','','','','','','',''],
+                ['','','','B','B','B','',''],
+                ['','','','','K','','',''],
             ],
-            'white' => true,
+            'white' => false,
             'check' => [false, false],
             'rochadeFirstMoves' => [
                 [true,true,true],
                 [true,true,true],
             ],
         ];
+
+        /* Anzahl offCheckMoves */
+//                $initGame = [
+//                    'grid' => [
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['T','','s','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','k','','','','',''],
+//                    ],
+//                    'white' => true,
+//                    'check' => [false, false],
+//                    'rochadeFirstMoves' => [
+//                        [true,true,true],
+//                        [true,true,true],
+//                    ],
+//                ];
+
+        /* Rochade */
+//        $initGame = [
+//            'grid' => [
+//                ['t','','','k','','','','t'],
+//                ['','','','','','','',''],
+//                ['','s','','','','','',''],
+//                ['','','T','','','','S',''],
+//                ['','','','','','','',''],
+//                ['','','','','','','','l'],
+//                ['','','','','','','',''],
+//                ['T','','','','K','','','T'],
+//            ],
+//            'white' => true,
+//            'check' => [false, false],
+//            'rochadeFirstMoves' => [
+//                [true,true,true],
+//                [true,true,true],
+//            ],
+//        ];
 
         $UnicodePieces = [
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
@@ -179,8 +218,6 @@
 
         function fieldUnderAttack($y, $x, $grid, $white, $vectors) {
             $fieldUnderAttack = false;
-            //1. get all enemys
-            //array[0]-row-y-$i & array[1]-col-x-$j
             for($i = 0; $i < count($grid); $i++) {
                 for($j = 0; $j < count($grid[$i]); $j++) {
                     if($grid[$i][$j] !== '') {
@@ -223,17 +260,15 @@
 
         function offCheck($grid, $white, $vectors) {
             $offCheckMoves = [];
-            $simulationGrid = $grid;
-            for($i = 0; $i < count($grid); $i++) {
+            for($i = 0; $i < count($grid[0]); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ( ($grid[$i][$j] !== '') && (strtolower($grid[$i][$j]) !== 'k') ){
                         if( (!$white && ctype_upper($grid[$i][$j])) || ($white && ctype_lower($grid[$i][$j])) ) {
                             $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
                             foreach ($possibleMovesCompanions as $moveCompanions){
-                                $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
-                                if(!inCheck($simulationGrid, !$white, $vectors)){
+                                $grid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
+                                if(!inCheck($grid, !$white, $vectors)){
                                     $offCheckMoves[] = $moveCompanions;
-                                    return $offCheckMoves;
                                 }
                             }
                         }
@@ -320,7 +355,6 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            var_dump($offCheckMoves);
                             if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
@@ -447,7 +481,6 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            var_dump($offCheckMoves);
                             if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
