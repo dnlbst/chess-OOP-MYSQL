@@ -538,7 +538,8 @@
         function showGrid($grid, $pieces) {
             for($i=0; $i <= 7; $i++)
             {
-                echo "<div class='rownum'><strong>" . (8-$i). '</strong> - ' . $i . "</div>";
+//                echo "<div class='rownum'><strong>" . (8-$i). '</strong> - ' . $i . "</div>";
+                echo "<div class='rownum'>" . (8-$i). "</div>";
                 echo "<div class='row'>";
                 for($j=0;$j<=7;$j++)
                 {
@@ -547,7 +548,7 @@
                     {
                         echo "<div class='white'>";
                     }
-                    else
+                else
                     {
                         echo "<div class='black'>";
                     }
@@ -564,16 +565,6 @@
 
         ?>
         <div class="row">
-            <div class="white">0</div>
-            <div class="white">1</div>
-            <div class="white">2</div>
-            <div class="white">3</div>
-            <div class="white">4</div>
-            <div class="white">5</div>
-            <div class="white">6</div>
-            <div class="white">7</div>
-        </div>
-        <div class="row">
             <div class="white">A</div>
             <div class="white">B</div>
             <div class="white">C</div>
@@ -583,5 +574,15 @@
             <div class="white">G</div>
             <div class="white">H</div>
         </div>
+<!--        <div class="row">-->
+<!--            <div class="white">0</div>-->
+<!--            <div class="white">1</div>-->
+<!--            <div class="white">2</div>-->
+<!--            <div class="white">3</div>-->
+<!--            <div class="white">4</div>-->
+<!--            <div class="white">5</div>-->
+<!--            <div class="white">6</div>-->
+<!--            <div class="white">7</div>-->
+<!--        </div>-->
     </div>
 </section>

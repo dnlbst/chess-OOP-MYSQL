@@ -13,7 +13,9 @@ body {
 }
 .rownum {
     width: 10px;
-    height: 10px;
+    height: 30px;
+    font-size: 20px;
+    margin-left: -20px;
 }
 .black {
     float: left;
