@@ -3,34 +3,34 @@
 
         <?php
 
-        $initGame = [
-            'grid' => [
-                ['t','l','s','d','k','s','l','t'],
-                ['b','b','b','b','b','b','b','b',],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['','','','','','','',''],
-                ['B','B','B','B','B','B','B','B'],
-                ['T','L','S','D','K','S','L','T'],
-            ],
-            'white' => true,
-            'check' => [false, false],
-            'rochadeFirstMoves' => [
-                [true,true,true],
-                [true,true,true],
-            ],
-        ];
+//        $initGame = [
+//            'grid' => [
+//                ['t','l','s','d','k','s','l','t'],
+//                ['b','b','b','b','b','b','b','b',],
+//                ['','','','','','','',''],
+//                ['','','','','','','',''],
+//                ['','','','','','','',''],
+//                ['','','','','','','',''],
+//                ['B','B','B','B','B','B','B','B'],
+//                ['T','L','S','D','K','S','L','T'],
+//            ],
+//            'white' => true,
+//            'check' => [false, false],
+//            'rochadeFirstMoves' => [
+//                [true,true,true],
+//                [true,true,true],
+//            ],
+//        ];
 
         /* Schach Testgrid*/
 //        $initGame = [
 //            'grid' => [
-//                ['','','','l','k','b','',''],
-//                ['','','','','l','b','',''],
-//                ['D','','','','','','',''],
-//                ['','','l','','','','',''],
-//                ['d','','','','','','',''],
+//                ['','','','','','k','',''],
 //                ['','','','','','','',''],
+//                ['','','','','','','',''],
+//                ['','','','','','','',''],
+//                ['d','','T','','','','',''],
+//                ['','','','','','S','',''],
 //                ['','','','','L','B','',''],
 //                ['','','','L','K','B','',''],
 //            ],
@@ -44,24 +44,24 @@
 //        ];
 
         /* Schach Matt Testgrid*/
-//        $initGame = [
-//            'grid' => [
-//                ['','','','l','k','b','',''],
-//                ['','','','','l','b','',''],
-//                ['','','','','','','',''],
-//                ['','','l','','','','',''],
-//                ['','','','','','','',''],
-//                ['t','','','','','','',''],
-//                ['','','','B','B','B','',''],
-//                ['','','','','K','','',''],
-//            ],
-//            'white' => false,
-//            'check' => [false, false],
-//            'rochadeFirstMoves' => [
-//                [true,true,true],
-//                [true,true,true],
-//            ],
-//        ];
+        $initGame = [
+            'grid' => [
+                ['','','','','k','','',''],
+                ['','','','b','b','b','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['t','','','','','','',''],
+                ['','','','B','B','B','',''],
+                ['','','','','K','','',''],
+            ],
+            'white' => false,
+            'check' => [false, false],
+            'rochadeFirstMoves' => [
+                [true,true,true],
+                [true,true,true],
+            ],
+        ];
 
         /* Anzahl offCheckMoves Testgrid */
 //                $initGame = [
@@ -69,7 +69,7 @@
 //                        ['','','','','','','',''],
 //                        ['','','','','','','',''],
 //                        ['','','','','','','',''],
-//                        ['','','','','','','',''],
+//                        ['','','','','','K','',''],
 //                        ['','','','','','','',''],
 //                        ['T','','s','','','','',''],
 //                        ['','','','','','','',''],
@@ -237,22 +237,20 @@
         }
 
         function findKing($grid, $white) {
-            $findKing = [];
             for($i = 0; $i < count($grid); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ((!$white && $grid[$i][$j] === 'k') || ($white && $grid[$i][$j] === 'K')){
                         $findKing = [$i,$j];
+                        return $findKing;
                     }
                 }
             }
-            return $findKing;
         }
 
         function inCheck($grid, $white, $vectors) {
             $inCheck = false;
             $king = findKing($grid, $white);
             if( (!$white && $grid[$king[0]][$king[1]] === 'k') || ($white && $grid[$king[0]][$king[1]] === 'K') ) {
-                //field underAttack?
                 $inCheck = fieldUnderAttack($king[0], $king[1], $grid, $white, $vectors);
             }
             return $inCheck;
@@ -260,22 +258,23 @@
 
         function offCheck($grid, $white, $vectors) {
             $offCheckMoves = [];
-            for($i = 0; $i < count($grid[0]); $i++) {
+            $simulationGrid = $grid;
+            for($i = 0; $i < count($grid); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ( ($grid[$i][$j] !== '') && (strtolower($grid[$i][$j]) !== 'k') ){
                         if( (!$white && ctype_upper($grid[$i][$j])) || ($white && ctype_lower($grid[$i][$j])) ) {
                             $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
                             foreach ($possibleMovesCompanions as $moveCompanions){
-                                $grid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
-                                if(!inCheck($grid, !$white, $vectors)){
+                                $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
+                                if(!inCheck($simulationGrid, !$white, $vectors)){
                                     $offCheckMoves[] = $moveCompanions;
+                                    return $offCheckMoves;
                                 }
                             }
                         }
                     }
                 }
             }
-            return $offCheckMoves;
         }
 
         function pawnToQueen($yNew) {
@@ -326,7 +325,7 @@
             $yNew = $yAxis[$inputTo[1]];
 
             $piece = $grid[$y][$x];
-            if(!empty($piece)) {
+            if($piece !== '') {
                 if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
                     $message = "Achtung" . "<br>" . "nicht dein Zug!";
                 } else {
@@ -358,7 +357,8 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
+                            var_dump('$offCheckMoves:',$offCheckMoves);
+                            if($menace === false && is_null($offCheckMoves) && count($possibleMovesKing) === 0){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
                                 if($white){
@@ -486,7 +486,7 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            if(count($possibleMovesKing) === 0 && $menace == false && (count($offCheckMoves) === 0)){
+                            if($menace === false && is_null($offCheckMoves) && count($possibleMovesKing) === 0){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
                                 if($white){
@@ -538,7 +538,8 @@
         function showGrid($grid, $pieces) {
             for($i=0; $i <= 7; $i++)
             {
-                echo "<div class='rownum'><strong>" . (8-$i). '</strong> - ' . $i . "</div>";
+//                echo "<div class='rownum'><strong>" . (8-$i). '</strong> - ' . $i . "</div>";
+                echo "<div class='rownum'>" . (8-$i). "</div>";
                 echo "<div class='row'>";
                 for($j=0;$j<=7;$j++)
                 {
@@ -547,7 +548,7 @@
                     {
                         echo "<div class='white'>";
                     }
-                    else
+                else
                     {
                         echo "<div class='black'>";
                     }
@@ -564,16 +565,6 @@
 
         ?>
         <div class="row">
-            <div class="white">0</div>
-            <div class="white">1</div>
-            <div class="white">2</div>
-            <div class="white">3</div>
-            <div class="white">4</div>
-            <div class="white">5</div>
-            <div class="white">6</div>
-            <div class="white">7</div>
-        </div>
-        <div class="row">
             <div class="white">A</div>
             <div class="white">B</div>
             <div class="white">C</div>
@@ -583,5 +574,15 @@
             <div class="white">G</div>
             <div class="white">H</div>
         </div>
+<!--        <div class="row">-->
+<!--            <div class="white">0</div>-->
+<!--            <div class="white">1</div>-->
+<!--            <div class="white">2</div>-->
+<!--            <div class="white">3</div>-->
+<!--            <div class="white">4</div>-->
+<!--            <div class="white">5</div>-->
+<!--            <div class="white">6</div>-->
+<!--            <div class="white">7</div>-->
+<!--        </div>-->
     </div>
 </section>

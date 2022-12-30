@@ -13,6 +13,9 @@
                 case 'from':
                     nextone = document.getElementById("to");
                     break;
+                case 'to':
+                    nextone = document.getElementById("submit");
+                    break;
             }
             if(that.value.length > 0)
             {
@@ -33,8 +36,8 @@
                     <label for='from'>von</label>
                     <input type='text' id='from' name='from' maxlength='2' value='' autofocus onkeypress='return jump(this);'>
                     <label for='to'>auf</label>
-                    <input type='text' id='to' name='to' maxlength='2'      value='' ' >
-                    <input type='submit' value='Submit'>
+                    <input type='text' id='to' name='to' maxlength='2' value='' onkeypress='return jump(this);'>
+                    <input type='submit' id='submit' value='Submit'>
                     <label for='reset'></label>
                     <input id='reset' type='submit' name='reset' value='Reset'>
                 </form>
