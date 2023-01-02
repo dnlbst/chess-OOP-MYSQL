@@ -240,8 +240,7 @@
             for($i = 0; $i < count($grid); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ((!$white && $grid[$i][$j] === 'k') || ($white && $grid[$i][$j] === 'K')){
-                        $findKing = [$i,$j];
-                        return $findKing;
+                        return [$i,$j];
                     }
                 }
             }
@@ -357,7 +356,6 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            var_dump('$offCheckMoves:',$offCheckMoves);
                             if($menace === false && is_null($offCheckMoves) && count($possibleMovesKing) === 0){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
