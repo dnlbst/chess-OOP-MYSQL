@@ -386,7 +386,7 @@
                             $rochadeFirstMoves[1][1] = false;
                         }
                         if($grid[7][7] === ''){
-                            $rochadeFirstMoves[2][2] = false;
+                            $rochadeFirstMoves[1][2] = false;
                         }
                         $game['grid'] = $grid;
                         $game['white'] = $white;
@@ -514,7 +514,7 @@
                             $rochadeFirstMoves[1][1] = false;
                         }
                         if($grid[7][7] === ''){
-                            $rochadeFirstMoves[2][2] = false;
+                            $rochadeFirstMoves[1][2] = false;
                         }
                         $game['grid'] = $grid;
                         $game['white'] = $white;
