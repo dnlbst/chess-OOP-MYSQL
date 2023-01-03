@@ -258,6 +258,7 @@
             return $inCheck;
         }
 
+        // hier muss irgendwo die start pos des virtuellen läufers gelöscht werden...
         function offCheck($grid, $white, $vectors) {
             $offCheckMoves = [];
             $simulationGrid = $grid;
