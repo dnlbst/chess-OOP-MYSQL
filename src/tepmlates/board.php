@@ -53,7 +53,7 @@
 //                ['','','','','','','',''],
 //                ['t','','','','','','',''],
 //                ['','','','B','B','B','',''],
-//                ['','','','','K','','',''],
+//                ['','','','','K','','','T'],
 //            ],
 //            'white' => false,
 //            'check' => [false, false],
@@ -64,44 +64,44 @@
 //        ];
 
         /* Anzahl offCheckMoves Testgrid */
-//                $initGame = [
-//                    'grid' => [
-//                        ['','','','','','','',''],
-//                        ['','','','','','','',''],
-//                        ['','','','','','','',''],
-//                        ['','','','','','K','',''],
-//                        ['','','','','','','',''],
-//                        ['T','','s','','','','',''],
-//                        ['','','','','','','',''],
-//                        ['','','k','','','','',''],
-//                    ],
-//                    'white' => true,
-//                    'check' => [false, false],
-//                    'rochadeFirstMoves' => [
-//                        [true,true,true],
-//                        [true,true,true],
-//                    ],
-//                ];
+                $initGame = [
+                    'grid' => [
+                        ['','','','','','','',''],
+                        ['','','','','','','',''],
+                        ['','','','','','','',''],
+                        ['','','','','','K','',''],
+                        ['','','','','','','',''],
+                        ['T','','s','','','','',''],
+                        ['','','','','','','',''],
+                        ['','','k','','','','',''],
+                    ],
+                    'white' => true,
+                    'check' => [false, false],
+                    'rochadeFirstMoves' => [
+                        [true,true,true],
+                        [true,true,true],
+                    ],
+                ];
 
         /* Rochade Testgrid */
-        $initGame = [
-            'grid' => [
-                ['t','','','k','','','','t'],
-                ['','','','','','','',''],
-                ['','s','','','','','',''],
-                ['','','','','','','S',''],
-                ['','','','','','','',''],
-                ['','','','','','','','l'],
-                ['','','','','','','',''],
-                ['T','','','','K','','','T'],
-            ],
-            'white' => true,
-            'check' => [false, false],
-            'rochadeFirstMoves' => [
-                [true,true,true],
-                [true,true,true],
-            ],
-        ];
+//        $initGame = [
+//            'grid' => [
+//                ['t','','','k','','','','t'],
+//                ['','','','','','','',''],
+//                ['','s','','','','','',''],
+//                ['','','','','','','S',''],
+//                ['','','','','','','',''],
+//                ['','','','','','','','l'],
+//                ['','','','','','','',''],
+//                ['T','','','','K','','','T'],
+//            ],
+//            'white' => true,
+//            'check' => [false, false],
+//            'rochadeFirstMoves' => [
+//                [true,true,true],
+//                [true,true,true],
+//            ],
+//        ];
 
         $UnicodePieces = [
             'K' => '&#x2654;','D' => '&#x2655;','T' => '&#x2656;','L' => '&#x2657;','S' => '&#x2658;','B' => '&#x2659;',
@@ -183,8 +183,11 @@
                             $possibleMoves[] = [$yToTest, $xToTest - 1];
                         }
                     }
-                    // z.b. Dame: überspringen unterbinden es sei denn König steht unter Schach
-                    if ($fieldToTest !== '' && strtolower($fieldToTest) !== 'k') {
+                    // kein überspringen von Figuren: z.b. Dame && es sei denn König steht unter Schach, da die Felder hinter dem König auch unter Schach stünden, darf er dort nicht hinziehen.
+                    // Um die Rochade für die Auflösung des Schach Matt zu nutzen, könnte geprüft werden ob 'k' an letzter Pos im Array der possible Moves des Angreifers ist, also ob noch Felder hinter ihm frei wären.
+                    // ist das nicht der Fall könnte man das nutzen, um die Rochade zu erlauben, denn die Rochade ist aktuell nicht erlaubt, da die Felder fälschlicherweise bedroht sind.
+                    if ($fieldToTest !== '' &&
+                        ( ($white && $fieldToTest !== 'k') || (!$white && $fieldToTest !== 'K')) ) {
                         break;
                     }
                     // Bauer Spielbeginn
@@ -267,13 +270,14 @@
                                 $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
                                 if(!inCheck($simulationGrid, !$white, $vectors)){
                                     $offCheckMoves[] = $moveCompanions;
-                                    return $offCheckMoves;
                                 }
                             }
                         }
                     }
                 }
             }
+            var_dump($offCheckMoves);
+            return $offCheckMoves;
         }
 
         function pawnToQueen($yNew) {
@@ -356,7 +360,7 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            if($menace === false && is_null($offCheckMoves) && count($possibleMovesKing) === 0){
+                            if($menace === false && count($offCheckMoves) === 0 && count($possibleMovesKing) === 0){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
                                 if($white){
@@ -484,7 +488,7 @@
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
-                            if($menace === false && is_null($offCheckMoves) && count($possibleMovesKing) === 0){
+                            if($menace === false && count($offCheckMoves) === 0 && count($possibleMovesKing) === 0){
                                 $message = '!!! SCHACH MATT !!!';
                             } else {
                                 if($white){
