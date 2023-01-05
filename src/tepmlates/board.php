@@ -44,44 +44,44 @@
 //        ];
 
         /* Schach Matt Testgrid*/
-//        $initGame = [
-//            'grid' => [
-//                ['','','','','k','','',''],
-//                ['','','','b','b','b','',''],
-//                ['','','','','','','','T'],
-//                ['','','','','','','',''],
-//                ['','','','','','','',''],
-//                ['t','','','','','','',''],
-//                ['','','','B','B','B','',''],
-//                ['','','','','K','','','T'],
-//            ],
-//            'white' => false,
-//            'check' => [false, false],
-//            'rochadeFirstMoves' => [
-//                [true,true,true],
-//                [true,true,true],
-//            ],
-//        ];
+        $initGame = [
+            'grid' => [
+                ['','','','','k','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['t','','','','','','',''],
+                ['','','','B','B','B','',''],
+                ['','','','','K','','','T'],
+            ],
+            'white' => false,
+            'check' => [false, false],
+            'rochadeFirstMoves' => [
+                [true,true,true],
+                [true,true,true],
+            ],
+        ];
 
         /* Anzahl offCheckMoves Testgrid */
-                $initGame = [
-                    'grid' => [
-                        ['','','','','','','',''],
-                        ['','','','','','','',''],
-                        ['','','','','','','',''],
-                        ['','','','','','K','',''],
-                        ['','','','','','','',''],
-                        ['T','','s','','','','',''],
-                        ['','','','','','','',''],
-                        ['','','k','','','','',''],
-                    ],
-                    'white' => true,
-                    'check' => [false, false],
-                    'rochadeFirstMoves' => [
-                        [true,true,true],
-                        [true,true,true],
-                    ],
-                ];
+//                $initGame = [
+//                    'grid' => [
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','','','','K','',''],
+//                        ['','','','','','','',''],
+//                        ['T','','s','','','','',''],
+//                        ['','','','','','','',''],
+//                        ['','','k','','','','',''],
+//                    ],
+//                    'white' => true,
+//                    'check' => [false, false],
+//                    'rochadeFirstMoves' => [
+//                        [true,true,true],
+//                        [true,true,true],
+//                    ],
+//                ];
 
         /* Rochade Testgrid */
 //        $initGame = [
@@ -157,6 +157,8 @@
         function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $menace = false) {
             $piece = $grid[$y][$x];
             $possibleMoves = [];
+            //zu testende Figur aus Spielfeld nehmen
+            $grid[$y][$x] = '';
             foreach ($vectors as $vector) {
                 if ($piece === 'b') {
                     $vector[0] *= -1;
@@ -170,6 +172,7 @@
                         if (strtolower($piece) === 'k' && $menace === false) {
                             if (!fieldUnderAttack($yToTest, $xToTest, $grid, $white, $allVectors)) {
                                 $possibleMoves[] = [$yToTest, $xToTest];
+
                             }
                         } else {
                             $possibleMoves[] = [$yToTest, $xToTest];
@@ -183,11 +186,8 @@
                             $possibleMoves[] = [$yToTest, $xToTest - 1];
                         }
                     }
-                    // kein überspringen von Figuren: z.b. Dame && es sei denn König steht unter Schach, da die Felder hinter dem König auch unter Schach stünden, darf er dort nicht hinziehen.
-                    // Um die Rochade für die Auflösung des Schach Matt zu nutzen, könnte geprüft werden ob 'k' an letzter Pos im Array der possible Moves des Angreifers ist, also ob noch Felder hinter ihm frei wären.
-                    // ist das nicht der Fall könnte man das nutzen, um die Rochade zu erlauben, denn die Rochade ist aktuell nicht erlaubt, da die Felder fälschlicherweise bedroht sind.
-                    if ($fieldToTest !== '' &&
-                        ( ($white && $fieldToTest !== 'k') || (!$white && $fieldToTest !== 'K')) ) {
+                    // kein überspringen von Figuren: z.b. Dame
+                    if ($fieldToTest !== '') {
                         break;
                     }
                     // Bauer Spielbeginn
@@ -195,7 +195,7 @@
                         if ($y === 6 && $piece === 'B') {
                             $possibleMoves[] = [$yToTest - 1, $xToTest];
                         }
-                        if ($y == 1 && $piece === 'b') {
+                        if ($y === 1 && $piece === 'b') {
                             $possibleMoves[] = [$yToTest + 1, $xToTest];
                         }
                     }
@@ -203,8 +203,8 @@
                     if (strtolower($piece) === 'k' || strtolower($piece) === 's' || strtolower($piece) === 'b') {
                         break;
                     }
-                    $yToTest = $yToTest + $vector[0];
-                    $xToTest = $xToTest + $vector[1];
+                    $yToTest += $vector[0];
+                    $xToTest += $vector[1];
                 }
             }
             return $possibleMoves;
@@ -212,7 +212,7 @@
 
         function coordinateInArray($y, $x, $coordinates) {
             foreach ($coordinates as $coordinate) {
-                if ($coordinate[0] == $y && $coordinate[1] == $x) {
+                if ($coordinate[0] === $y && $coordinate[1] === $x) {
                     return true;
                 }
             }
@@ -258,16 +258,16 @@
             return $inCheck;
         }
 
-        // hier muss irgendwo die start pos des virtuellen läufers gelöscht werden...
+        // hier muss irgendwo die start pos des virtuellen Figur gelöscht werden...
         function offCheck($grid, $white, $vectors) {
             $offCheckMoves = [];
-            $simulationGrid = $grid;
             for($i = 0; $i < count($grid); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ( ($grid[$i][$j] !== '') && (strtolower($grid[$i][$j]) !== 'k') ){
                         if( (!$white && ctype_upper($grid[$i][$j])) || ($white && ctype_lower($grid[$i][$j])) ) {
                             $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
                             foreach ($possibleMovesCompanions as $moveCompanions){
+                                $simulationGrid = $grid;
                                 $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
                                 if(!inCheck($simulationGrid, !$white, $vectors)){
                                     $offCheckMoves[] = $moveCompanions;
@@ -277,7 +277,6 @@
                     }
                 }
             }
-            var_dump($offCheckMoves);
             return $offCheckMoves;
         }
 
@@ -359,6 +358,7 @@
                         if (inCheck($grid, $white, $vectors)) {
                             $king = findKing($grid, $white);
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
+                            var_dump($possibleMovesKing);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
                             if($menace === false && count($offCheckMoves) === 0 && count($possibleMovesKing) === 0){
@@ -396,6 +396,8 @@
                         $game['check'] = $check;
                         $game['rochadeFirstMoves'] = $rochadeFirstMoves;
                         file_put_contents('grid.txt', json_encode($game, JSON_PRETTY_PRINT));
+
+//                        !!! ToDo ungültige Rochade gilt als Zug !!!
 
                     } elseif ( strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
                         if($piece === 'k' && ($yNew === 0 && $xNew === 0)){
@@ -451,7 +453,7 @@
                                             $grid[7][0] = '';
                                             $grid[7][2] = 'K';
                                             $grid[7][3] = 'T';
-                                            $message = "Kurze Rochade gezogen," . "<br>" . "⚫ Schwarz am Zug!";
+                                            $message = "Lange Rochade gezogen," . "<br>" . "⚫ Schwarz am Zug!";
                                         } else {
                                             $message = "Rochade ungültig," . "<br>" . "Felder des Königs bedroht.";
                                         }
@@ -472,7 +474,7 @@
                                             $grid[7][7] = '';
                                             $grid[7][6] = 'K';
                                             $grid[7][5] = 'T';
-                                            $message = "Lange Rochade gezogen," . "<br>" . "⚫ Schwarz am Zug!";
+                                            $message = "Kurze Rochade gezogen," . "<br>" . "⚫ Schwarz am Zug!";
                                         } else {
                                             $message = "Rochade ungültig," . "<br>" . "Felder des Königs bedroht.";
                                         }
@@ -547,7 +549,7 @@
                 for($j=0;$j<=7;$j++)
                 {
                     $total=$i+$j;
-                    if($total%2==0)
+                    if($total%2===0)
                     {
                         echo "<div class='white'>";
                     }
