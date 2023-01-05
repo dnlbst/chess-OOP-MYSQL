@@ -383,7 +383,7 @@
 
                         $message = moveFinisher($white, $grid, $vectors, $yNew, $xNew, $message, $check, $rochadeFirstMoves, $game);
 
-                      ToDo ungültige Rochade gilt als Zug !!!
+//                      ToDo ungültige Rochade gilt als Zug !!!
 
                     } elseif ( strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
 
