@@ -3,6 +3,15 @@
 
         <?php
 
+        $vectors = [
+            'k' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
+            'd' => [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]],
+            't' => [[-1,0],[0,1],[1,0],[0,-1]],
+            'l' => [[-1,-1],[-1,1],[1,-1],[1,1]],
+            's' => [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2],[-1,-2]],
+            'b' => [[-1,0]],
+        ];
+
         function testCoordinateInArray(){
             $testCoordinates = [[1,3], [4,7], [8,64]];
             $result = coordinateInArray(1,3, $testCoordinates);
@@ -15,53 +24,85 @@
             }
         }
 
-//        function testPawnToQueen(){
-//            $result = pawnToQueen(0, $xNew, $grid);
-//                if ($result){
-//                    echo " - pawnToQueen 0 works";
-//                }
-//            $result = pawnToQueen(7);
-//                if ($result){
-//                    echo " - pawnToQueen 7 works";
-//                }
-//            $result = pawnToQueen(1);
-//                if ($result === false){
-//                    echo " - pawnToQueen 1=false works";
-//                }
-//        }
+        function testPawnToQueen(){
+            $result = pawnToQueen(0, $xNew, $grid);
+                if ($result){
+                    echo " - pawnToQueen 0 works";
+                }
+            $result = pawnToQueen(7);
+                if ($result){
+                    echo " - pawnToQueen 7 works";
+                }
+            $result = pawnToQueen(1);
+                if ($result === false){
+                    echo " - pawnToQueen 1=false works";
+                }
+        }
 
-        function testFindKing(){
-            $testGrid = [
-                'kings' =>  [
-                        ['','k',''],
-                        ['','K',''],
-                    ],
+        function testFieldUnderAttack($vectors){
+            $simGrid = [
+                'grid' => [
+                    ['','','','','','','',''],
+                    ['','','','','','','',''],
+                    ['','','','','','','',''],
+                    ['','','','','','K','',''],
+                    ['','t','','','','','',''],
+                    ['T','','','','','','',''],
+                    ['','','','','','','',''],
+                    ['','','k','','','','',''],
+                ],
+                'white' => false,
+                'check' => [false, false],
+                'rochadeFirstMoves' => [
+                    [true,true,true],
+                    [true,true,true],
+                ],
             ];
-            $testKings = $testGrid['kings'];
-            $result = findKing($testKings);
-            foreach ($result as $testKing){
-                echo ' - find King works: ' . $testKings[$testKing[0]][$testKing[1]] . ' - ' ;
-            }
-
+            $result = fieldUnderAttack(4,0, $simGrid['grid'], $simGrid['white'], $vectors);
+                if ($result) {
+                    echo ' - Test fieldUnderAttack auf true erfolgreich';
+                }
+            $result = fieldUnderAttack(6,0, $simGrid['grid'], $simGrid['white'], $vectors);
+                if ($result) {
+                    echo ' - Test fieldUnderAttack auf false erfolgreich';
+                }
         }
 
-        function testFieldUnderAttack(){
-            $testUnderAttack = false;
-            $result = fieldUnderAttack();
-
-            return $testUnderAttack;
+        function TestIncheck($vectors){
+            $simGrid = [
+                'grid' => [
+                    ['','','','','','','',''],
+                    ['','','','','','','',''],
+                    ['','','','','','','',''],
+                    ['','','','','','K','',''],
+                    ['','t','','','','','',''],
+                    ['','','','','','','',''],
+                    ['L','','','','','','',''],
+                    ['','','k','','','','',''],
+                ],
+                'white' => false,
+                'check' => [false, false],
+                'rochadeFirstMoves' => [
+                    [true,true,true],
+                    [true,true,true],
+                ],
+            ];
+            $result = inCheck($simGrid['grid'], $simGrid['white'], $vectors);
+                if ($result){
+                    echo ' - Test inCheck auf true erfolgreich';
+                } else {
+                    echo ' - Test inCheck auf false erfolgreich';
+                }
         }
 
-//$result = fieldUnderAttack(4,5,$grid, false, $vectors);
-//var_dump($result);
-
-        // TESTING all functions
+// TESTING all functions
         if (isset($_GET['test']) && $_GET['test'] == 1) {
 
 //            testCoordinateInArray();
 //            testPawnToQueen();
-            testFindKing();
 //            testFieldUnderAttack();
+//            TestIncheck($vectors);
+
         }
 
         ?>
