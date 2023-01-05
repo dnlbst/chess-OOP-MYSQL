@@ -169,10 +169,9 @@
                 while ($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7) {
                     $fieldToTest = $grid[$yToTest][$xToTest];
                     if ($fieldToTest === '' || ($white && ctype_lower($fieldToTest) && $piece !== 'B') || (!$white && ctype_upper($fieldToTest) && $piece !== 'b')) {
-                        if (strtolower($piece) === 'k' && $menace === false) {
+                        if ($menace === false && strtolower($piece) === 'k') {
                             if (!fieldUnderAttack($yToTest, $xToTest, $grid, $white, $allVectors)) {
                                 $possibleMoves[] = [$yToTest, $xToTest];
-
                             }
                         } else {
                             $possibleMoves[] = [$yToTest, $xToTest];
@@ -358,7 +357,6 @@
                         if (inCheck($grid, $white, $vectors)) {
                             $king = findKing($grid, $white);
                             $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
-                            var_dump($possibleMovesKing);
                             $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
                             $offCheckMoves = offCheck($grid, !$white, $vectors);
                             if($menace === false && count($offCheckMoves) === 0 && count($possibleMovesKing) === 0){
