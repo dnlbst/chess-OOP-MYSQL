@@ -154,11 +154,13 @@
             $rochadeFirstMoves = $initGame['rochadeFirstMoves'];
         }
 
-        function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $menace = false) {
+        function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $check, $menace = false) {
             $piece = $grid[$y][$x];
-            $possibleMoves = [];
-            //zu testende Figur aus Spielfeld nehmen
             $grid[$y][$x] = '';
+            $possibleMoves = [];
+//            Todo schön wär, wenn könig auf Turm zieht rochade funktion nutzen? und als possible moves aufnehmen?
+
+//            Todo nur offckeck moves im Falle Schach erlauben!
             foreach ($vectors as $vector) {
                 if ($piece === 'b') {
                     $vector[0] *= -1;
@@ -169,10 +171,18 @@
                 while ($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7) {
                     $fieldToTest = $grid[$yToTest][$xToTest];
                     if ($fieldToTest === '' || ($white && ctype_lower($fieldToTest) && $piece !== 'B') || (!$white && ctype_upper($fieldToTest) && $piece !== 'b')) {
+                        //in fieldUnderAttack setzen wir absichtlich menace auf true, weil:
+                        //get enemy moves - menace true, weil wir den König aus der Suche ausschließen und nicht wollen, dass wir eine endlosschleife erzeugen.
                         if ($menace === false && strtolower($piece) === 'k') {
-                            if (!fieldUnderAttack($yToTest, $xToTest, $grid, $white, $allVectors)) {
+                            if (!fieldUnderAttack($yToTest, $xToTest, $grid, $white, $allVectors, $check)) {
                                 $possibleMoves[] = [$yToTest, $xToTest];
+                                var_dump('King', $possibleMoves);
                             }
+                            //und menace true - weil wir für die offCheckMoves possiblemoves nochmal brauchen.
+                        } elseif ($menace === false && ((!$white && $check[0] === true) || ($white && $check[1] === true))) {
+//                      ToDo: warum hier white flippen?
+                            $possibleMoves = offCheck($grid, !$white, $allVectors, $check);
+                            var_dump('Companions', $possibleMoves);
                         } else {
                             $possibleMoves[] = [$yToTest, $xToTest];
                         }
@@ -218,14 +228,15 @@
             return false;
         }
 
-        function fieldUnderAttack($y, $x, $grid, $white, $vectors) {
+        function fieldUnderAttack($y, $x, $grid, $white, $vectors, $check) {
             $fieldUnderAttack = false;
             for($i = 0; $i < count($grid); $i++) {
                 for($j = 0; $j < count($grid[$i]); $j++) {
                     if($grid[$i][$j] !== '') {
                         if( ($white && ctype_lower($grid[$i][$j])) || (!$white && ctype_upper($grid[$i][$j])) ) {
-                            //get enemy moves
-                            $possibleMovesEnemy = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
+                            //get enemy moves - menace true, weil wir den König aus der Suche ausschließen wollen daher setzen wir hier absichtlich menace auf true
+                            //und menace true - weil wir für die offCheckMoves possiblemoves nochmal brauchen.
+                            $possibleMovesEnemy = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, $check,true);
                             //3. field under threat? bool
                             $fieldUnderAttack = coordinateInArray($y,$x, $possibleMovesEnemy);
                             if ($fieldUnderAttack) {
@@ -248,26 +259,26 @@
             }
         }
 
-        function inCheck($grid, $white, $vectors) {
+        function inCheck($grid, $white, $vectors, $check) {
             $inCheck = false;
             $king = findKing($grid, $white);
             if( (!$white && $grid[$king[0]][$king[1]] === 'k') || ($white && $grid[$king[0]][$king[1]] === 'K') ) {
-                $inCheck = fieldUnderAttack($king[0], $king[1], $grid, $white, $vectors);
+                $inCheck = fieldUnderAttack($king[0], $king[1], $grid, $white, $vectors, $check);
             }
             return $inCheck;
         }
 
-        function offCheck($grid, $white, $vectors) {
+        function offCheck($grid, $white, $vectors, $check) {
             $offCheckMoves = [];
             for($i = 0; $i < count($grid); $i++) {
                 for($j=0; $j < count($grid[$i]); $j++) {
                     if ( ($grid[$i][$j] !== '') && (strtolower($grid[$i][$j]) !== 'k') ){
                         if( (!$white && ctype_upper($grid[$i][$j])) || ($white && ctype_lower($grid[$i][$j])) ) {
-                            $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, true);
+                            $possibleMovesCompanions = getPossibleMoves($i,$j, $grid, !$white, $vectors[strtolower($grid[$i][$j])], $vectors, $check,true);
                             foreach ($possibleMovesCompanions as $moveCompanions){
                                 $simulationGrid = $grid;
                                 $simulationGrid[$moveCompanions[0]][$moveCompanions[1]] = $grid[$i][$j];
-                                if(!inCheck($simulationGrid, !$white, $vectors)){
+                                if(!inCheck($simulationGrid, !$white, $vectors, $check)){
                                     $offCheckMoves[] = $moveCompanions;
                                 }
                             }
@@ -316,21 +327,23 @@
         }
 
         $game = [];
-        function moveFinisher($white, $grid, $vectors, $yNew, $xNew, $message, $check, $rochadeFirstMoves, $game){
+        function moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check){
             $white = !$white;
-            if (inCheck($grid, $white, $vectors)) {
+//            ToDo incheck ruft hier nochmal getpossiblemoves auf, könnte hier jetzt durch $check abgefragt werden, da dies nun neu ist und vorher nicht da war.
+            if (inCheck($grid, $white, $vectors, $check)) {
+
                 $king = findKing($grid, $white);
-                $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors);
-                $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors);
-                $offCheckMoves = offCheck($grid, !$white, $vectors);
+                $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors, $check);
+                $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors, $check);
+                $offCheckMoves = offCheck($grid, !$white, $vectors, $check);
+                if ($white) {
+                    $check[1] = true;
+                } else {
+                    $check[0] = true;
+                }
                 if ($menace === false && count($offCheckMoves) === 0 && count($possibleMovesKing) === 0) {
                     $message = '!!! SCHACH MATT !!!';
                 } else {
-                    if ($white) {
-                        $check[1] = true;
-                    } else {
-                        $check[0] = true;
-                    }
                     $message .= '<br> !!! SCHACH !!!';
                 }
             }
@@ -360,7 +373,7 @@
                 if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
                     $message = "Achtung" . "<br>" . "nicht dein Zug!";
                 } else {
-                    $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors);
+                    $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors, $check);
                     if (coordinateInArray($yNew, $xNew, $possibleMoves)) {
 
                         $grid[$y][$x] = '';
@@ -381,7 +394,7 @@
                             $message = "⚪ Weiss am Zug!";
                         }
 
-                        $message = moveFinisher($white, $grid, $vectors, $yNew, $xNew, $message, $check, $rochadeFirstMoves, $game);
+                        $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check);
 
 //                      ToDo ungültige Rochade gilt als Zug !!!
 
@@ -392,8 +405,8 @@
                                 $rochadeCoordinates = [[0,1],[0,2],[0,3]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
                                     if($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] === '' ){
-                                        if( fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false &&
-                                            fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors) === false){
+                                        if( fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors, $check) === false &&
+                                            fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors, $check) === false){
                                             $grid[0][4] = '';
                                             $grid[0][0] = '';
                                             $grid[0][2] = 'k';
@@ -413,8 +426,8 @@
                                 $rochadeCoordinates = [[0,5],[0,6]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
                                     if($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] === '' ){
-                                        if( fieldUnderAttack($rochadeCoordinates[0][0],$rochadeCoordinates[0][1], $grid, $white, $vectors) === false &&
-                                            fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false){
+                                        if( fieldUnderAttack($rochadeCoordinates[0][0],$rochadeCoordinates[0][1], $grid, $white, $vectors, $check) === false &&
+                                            fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors, $check) === false){
                                             $grid[0][4] = '';
                                             $grid[0][7] = '';
                                             $grid[0][6] = 'k';
@@ -434,8 +447,8 @@
                                 $rochadeCoordinates = [[7,1],[7,2],[7,3]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
                                     if($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] === '' ){
-                                        if( fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false &&
-                                            fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors) === false){
+                                        if( fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors, $check) === false &&
+                                            fieldUnderAttack($rochadeCoordinates[2][0],$rochadeCoordinates[2][1], $grid, $white, $vectors, $check) === false){
                                             $grid[7][4] = '';
                                             $grid[7][0] = '';
                                             $grid[7][2] = 'K';
@@ -455,8 +468,8 @@
                                 $rochadeCoordinates = [[7,5],[7,6]];
                                 foreach ($rochadeCoordinates as $rochadeCoordinate){
                                     if($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] === '' ){
-                                        if( fieldUnderAttack($rochadeCoordinates[0][0],$rochadeCoordinates[0][1], $grid, $white, $vectors) === false &&
-                                            fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors) === false){
+                                        if( fieldUnderAttack($rochadeCoordinates[0][0],$rochadeCoordinates[0][1], $grid, $white, $vectors, $check) === false &&
+                                            fieldUnderAttack($rochadeCoordinates[1][0],$rochadeCoordinates[1][1], $grid, $white, $vectors, $check) === false){
                                             $grid[7][4] = '';
                                             $grid[7][7] = '';
                                             $grid[7][6] = 'K';
@@ -472,7 +485,7 @@
                             }
                         }
 
-                        $message = moveFinisher($white, $grid, $vectors, $yNew, $xNew, $message, $check, $rochadeFirstMoves, $game);
+                        $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check);
 
                     } else {
                         $message = "!! Zug ungültig !!";
