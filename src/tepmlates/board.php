@@ -37,8 +37,14 @@
 //            'white' => false,
 //            'check' => [false, false],
 //            'rochadeFirstMoves' => [
-//                [true,true,true],
-//                [true,true,true]
+//                '0' => [
+//                    '0' => true,
+//                    'king' => true,
+//                    '7' => true],
+//                '7' => [
+//                    '0' => true,
+//                    'king' => true,
+//                    '7' => true]
 //            ]
 //        ];
 
@@ -57,8 +63,14 @@
 //            'white' => false,
 //            'check' => [false, false],
 //            'rochadeFirstMoves' => [
-//                [true,true,true],
-//                [true,true,true]
+//                '0' => [
+//                    '0' => true,
+//                    'king' => true,
+//                    '7' => true],
+//                '7' => [
+//                    '0' => true,
+//                    'king' => true,
+//                    '7' => true]
 //            ]
 //        ];
 
@@ -77,8 +89,14 @@
 //                    'white' => true,
 //                    'check' => [false, false],
 //                    'rochadeFirstMoves' => [
-//                        [true,true,true],
-//                        [true,true,true]
+//                        '0' => [
+//                            '0' => true,
+//                            'king' => true,
+//                            '7' => true],
+//                        '7' => [
+//                            '0' => true,
+//                            'king' => true,
+//                            '7' => true]
 //                    ]
 //                ];
 
@@ -165,12 +183,10 @@
             $message = "⚫ initGame['white'] = false";
         }
 
-
         function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $check, $menace = false) {
             $piece = $grid[$y][$x];
             $grid[$y][$x] = '';
             $possibleMoves = [];
-//            Todo schön wär, wenn könig auf Turm zieht rochade funktion nutzen? und als possible moves aufnehmen?
 
             foreach ($vectors as $vector) {
                 if ($piece === 'b') {
@@ -190,7 +206,6 @@
                             }
                         //und menace true - weil wir für die offCheckMoves possibleMoves nochmal brauchen und hier wieder nicht in die Endloschleife wollen.
                         } elseif ($menace === false && ((!$white && $check[0] === true) || ($white && $check[1] === true))) {
-//                      ToDo: warum hier white flippen?
                             $possibleMoves = offCheck($grid, !$white, $allVectors, $check);
                         } else {
                             $possibleMoves[] = [$yToTest, $xToTest];
@@ -398,6 +413,11 @@
             $message = '';
             $white = !$white;
 //            ToDo incheck ruft hier nochmal getpossiblemoves auf, Schach könnte hier jetzt durch $check abgefragt werden.
+            if($white) {
+                $message .= "<br>" . "⚪ Weiss am Zug!";
+            } else {
+                $message .= "<br>" . "⚫ Schwarz am Zug!";
+            }
             if (inCheck($grid, $white, $vectors, $check)) {
                 $king = findKing($grid, $white);
                 $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors, $check);
@@ -413,11 +433,6 @@
                 } else {
                     $message .= '<br> !!! SCHACH !!!';
                 }
-            }
-            if($white) {
-                $message .= "<br>" . "⚪ Weiss am Zug!";
-            } else {
-                $message .= "<br>" . "⚫ Schwarz am Zug!";
             }
             $rochadeFirstMoves = rochadeFirstMoveTrigger($rochadeFirstMoves, $grid);
 
@@ -460,8 +475,6 @@
                             }
 
                             $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $rochadeFirstMoves, $game, $check);
-
-//                      ToDo ungültige Rochade gilt als Zug !!!
 
                         } elseif (strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
                             if(!inCheck($grid, $white, $vectors, $check)){
