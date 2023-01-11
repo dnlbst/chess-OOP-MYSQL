@@ -159,6 +159,13 @@
             $rochadeFirstMoves = $initGame['rochadeFirstMoves'];
         }
 
+        if($initGame['white']){
+            $message = "⚪ Weiss beginnt";
+        } else {
+            $message = "⚫ initGame['white'] = false";
+        }
+
+
         function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $check, $menace = false) {
             $piece = $grid[$y][$x];
             $grid[$y][$x] = '';
@@ -299,7 +306,6 @@
             return $pawnToQueen;
         }
 
-
         function rochadeFirstMoveTrigger($rochadeFirstMoves, $grid){
             if($grid[0][0] === ''){
                 $rochadeFirstMoves[0][0] = false;
@@ -322,20 +328,20 @@
             return $rochadeFirstMoves;
         }
 
-        // Rochade Laufweg des Königs
-        function kingMoves($xNew, $grid, $white){
+        // Rochade Felder X-Achse des Königs
+        function rochadeKingXValues($xNew, $grid, $white){
             $kingPos = findKing($grid, $white);
             if($xNew === 0){
-                $kingMoves = [$kingPos[1]-1,$kingPos[1]-2];
+                $rochadeKingXValues = [$kingPos[1]-1,$kingPos[1]-2];
             } else {
-                $kingMoves = [$kingPos[1]+1,$kingPos[1]+2];
+                $rochadeKingXValues = [$kingPos[1]+1,$kingPos[1]+2];
             }
-            return $kingMoves;
+            return $rochadeKingXValues;
         }
 
         // Alle Rochade Felder frei?
-        function fieldsEmpty($yNew, $xNew, $grid){
-            $fieldsEmpty = true;
+        function rochadeFieldsEmpty($yNew, $xNew, $grid){
+            $rochadeFieldsEmpty = true;
             if($xNew === 0){
                 $rochadeCoordinates = [[$yNew,1],[$yNew,2],[$yNew,3]];
             } else {
@@ -343,71 +349,56 @@
             }
             foreach ($rochadeCoordinates as $rochadeCoordinate) {
                 if ($grid[$rochadeCoordinate[0]][$rochadeCoordinate[1]] !== '' ) {
-                    $fieldsEmpty = false;
+                    $rochadeFieldsEmpty = false;
                     break;
                 }
             }
-            return $fieldsEmpty;
+            return $rochadeFieldsEmpty;
         }
 
         function rochade($piece, $yNew, $xNew, $grid, $rochadeFirstMoves, $white, $vectors, $check) {
             $rochade = [
-                'grid' => [],
+                'xCoordinates' => [],
                 'message' => ''
             ];
-            $kingMovesClean = true;
+            $rochadeKingXValuesClean = true;
             // welcher König && auf eigenen Turm && li/re?
-            if( ( ($piece === 'k' && $yNew === 0) || ($piece === 'K' && $yNew === 7) ) && ($xNew === 0 || $xNew === 7) ){
+            if((($piece === 'k' && $yNew === 0) || ($piece === 'K' && $yNew === 7)) && ($xNew === 0 || $xNew === 7)){
                 // erster Zug König und Turm?
-                if( $rochadeFirstMoves[$yNew]['king'] && $rochadeFirstMoves[$yNew][$xNew]){
+                if($rochadeFirstMoves[$yNew]['king'] && $rochadeFirstMoves[$yNew][$xNew]){
                     // Rochade Felder besetzt?
-                    $fieldsEmpty = fieldsEmpty($yNew, $xNew, $grid);
-                    if($fieldsEmpty){
+                    $rochadeFieldsEmpty = rochadeFieldsEmpty($yNew, $xNew, $grid);
+                    if($rochadeFieldsEmpty){
                         // Zugfelder des Königs
-                        $kingMoves = kingMoves($xNew, $grid, $white);
-                        var_dump($kingMoves);
-                        foreach ($kingMoves as $kingMove){
+                        $rochadeKingXValues = rochadeKingXValues($xNew, $grid, $white);
+                        foreach ($rochadeKingXValues as $kingMove){
                             if(fieldUnderAttack($yNew, $kingMove, $grid, $white, $vectors, $check)){
-                                $kingMovesClean = false;
+                                $rochadeKingXValuesClean = false;
                                 break;
                             }
                         }
-                        if($kingMovesClean){
-//                            $grid[$yNew][$kingMoves[1]] = $piece;
-//                            $grid[$yNew][$kingMoves[0]] = $grid[$yNew][$xNew];
-//                            $grid[$yNew][4] = '';
-//                            $grid[$yNew][$xNew] = '';
-                            var_dump(
-                                $grid[$yNew][$kingMoves[1]] = $piece,
-                                $grid[$yNew][$kingMoves[0]] = $grid[$yNew][$xNew],
-                                $grid[$yNew][4] = '',
-                                $grid[$yNew][$xNew] = ''
-                            );
+                        if($rochadeKingXValuesClean){
+                            $rochade['xCoordinates'] = $rochadeKingXValues;
+                            $rochade['message'] = 'Rochade gezogen';
                         } else {
-                            echo 'Rochade ungültig, Felder des Königs bedroht';
+                            $rochade['message'] = 'Rochade ungültig, Felder des Königs bedroht';
                         }
                     } else {
-                        echo 'Rochade ungültig, Rochade besetzt';
+                        $rochade['message'] = 'Rochade ungültig, Rochade besetzt';
                     }
                 } else {
-                    echo 'Rochade ungültig, eine Figur wurde schon bewegt';
+                    $rochade['message'] = 'Rochade ungültig, eine Figur wurde schon bewegt';
                 }
             }
             return $rochade;
         }
 
-        if($initGame['white']){
-            $message = "⚪ Weiss fängt an";
-        } else {
-            $message = "⚫ initGame['white'] = false";
-        }
-
         $game = [];
-        function moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check){
+        function moveFinisher($yNew, $xNew, $grid, $white, $vectors, $rochadeFirstMoves, $game, $check){
+            $message = '';
             $white = !$white;
 //            ToDo incheck ruft hier nochmal getpossiblemoves auf, Schach könnte hier jetzt durch $check abgefragt werden.
             if (inCheck($grid, $white, $vectors, $check)) {
-
                 $king = findKing($grid, $white);
                 $possibleMovesKing = getPossibleMoves($king[0], $king[1], $grid, $white, $vectors[strtolower($grid[$king[0]][$king[1]])], $vectors, $check);
                 $menace = fieldUnderAttack($yNew, $xNew, $grid, !$white, $vectors, $check);
@@ -423,7 +414,11 @@
                     $message .= '<br> !!! SCHACH !!!';
                 }
             }
-
+            if($white) {
+                $message .= "<br>" . "⚪ Weiss am Zug!";
+            } else {
+                $message .= "<br>" . "⚫ Schwarz am Zug!";
+            }
             $rochadeFirstMoves = rochadeFirstMoveTrigger($rochadeFirstMoves, $grid);
 
             $game['grid'] = $grid;
@@ -439,55 +434,61 @@
             //A2 = A-x-col / 2-y-row
             $x = $xAxis[strtolower($inputFrom[0])];
             $y = $yAxis[$inputFrom[1]];
+            if($grid[$y][$x] !== ''){
+                $inputTo = str_split($_POST['to']);
+                $xNew = $xAxis[strtolower($inputTo[0])];
+                $yNew = $yAxis[$inputTo[1]];
 
-            $inputTo = str_split($_POST['to']);
-            $xNew = $xAxis[strtolower($inputTo[0])];
-            $yNew = $yAxis[$inputTo[1]];
+                $piece = $grid[$y][$x];
+                if($piece !== '') {
+                    if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
+                        $message = "Achtung" . "<br>" . "nicht dein Zug!";
+                    } else {
+                        $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors, $check);
+                        if (coordinateInArray($yNew, $xNew, $possibleMoves)) {
 
-            $piece = $grid[$y][$x];
-            if($piece !== '') {
-                if( ($white && ctype_lower($piece)) || (!$white && ctype_upper($piece)) ) {
-                    $message = "Achtung" . "<br>" . "nicht dein Zug!";
-                } else {
-                    $possibleMoves = getPossibleMoves($y, $x, $grid, $white, $vectors[strtolower($piece)], $vectors, $check);
-                    if (coordinateInArray($yNew, $xNew, $possibleMoves)) {
+                            $grid[$y][$x] = '';
 
-                        $grid[$y][$x] = '';
-
-                        if(pawnToQueen($yNew) && strtolower($piece) === 'b'){
-                            if(ctype_lower($piece)){
-                                $grid[$yNew][$xNew] = 'd';
+                            if(pawnToQueen($yNew) && strtolower($piece) === 'b'){
+                                if(ctype_lower($piece)){
+                                    $grid[$yNew][$xNew] = 'd';
+                                } else {
+                                    $grid[$yNew][$xNew] = 'D';
+                                }
                             } else {
-                                $grid[$yNew][$xNew] = 'D';
+                                $grid[$yNew][$xNew] = $piece;
                             }
-                        } else {
-                            $grid[$yNew][$xNew] = $piece;
-                        }
 
-                        if(ctype_upper($piece)) {
-                            $message = "⚫ Schwarz am Zug!";
-                        } else {
-                            $message = "⚪ Weiss am Zug!";
-                        }
-
-                        $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check);
+                            $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $rochadeFirstMoves, $game, $check);
 
 //                      ToDo ungültige Rochade gilt als Zug !!!
 
-                    } elseif ( strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
-
-                        $rochade = rochade($piece, $yNew, $xNew, $grid, $rochadeFirstMoves, $white, $vectors, $check);
-
-                        $message = moveFinisher($yNew, $xNew, $grid, $white, $vectors, $message, $rochadeFirstMoves, $game, $check);
-
-                    } else {
-                        $message = "!! Zug ungültig !!";
+                        } elseif (strtolower($piece) === 'k' && strtolower($grid[$yNew][$xNew]) === 't' ){
+                            if(!inCheck($grid, $white, $vectors, $check)){
+                                $message = "";
+                                $rochade = rochade($piece, $yNew, $xNew, $grid, $rochadeFirstMoves, $white, $vectors, $check);
+                                if(count($rochade['xCoordinates']) !== 0){
+                                    $grid[$yNew][$rochade['xCoordinates'][1]] = $piece;
+                                    $grid[$yNew][$rochade['xCoordinates'][0]] = $grid[$yNew][$xNew];
+                                    $grid[$yNew][4] = '';
+                                    $grid[$yNew][$xNew] = '';
+                                }
+                                $message = $rochade['message'] . '<br>' . moveFinisher($yNew, $xNew, $grid, $white, $vectors, $rochadeFirstMoves, $game, $check);
+                            } else {
+                                $message = "! keine Rochade bei SCHACH.";
+                            }
+                        } else {
+                            $message = "!! Zug ungültig !!";
+                        }
                     }
+                } else {
+                    $message = "!! 'Nach' Feld leer !!";
                 }
             } else {
-                $message = "!! Feld leer !!";
+                $message = "!! 'Von' Feld leer !!";
             }
         }
+
         /* reset */
         if (isset($_POST['reset'])) {
             unlink('grid.txt');
