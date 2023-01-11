@@ -183,12 +183,10 @@
             $message = "⚫ initGame['white'] = false";
         }
 
-
         function getPossibleMoves($y,$x, $grid, $white, $vectors, $allVectors, $check, $menace = false) {
             $piece = $grid[$y][$x];
             $grid[$y][$x] = '';
             $possibleMoves = [];
-//            Todo schön wär, wenn könig auf Turm zieht rochade funktion nutzen? und als possible moves aufnehmen?
 
             foreach ($vectors as $vector) {
                 if ($piece === 'b') {
@@ -208,7 +206,6 @@
                             }
                         //und menace true - weil wir für die offCheckMoves possibleMoves nochmal brauchen und hier wieder nicht in die Endloschleife wollen.
                         } elseif ($menace === false && ((!$white && $check[0] === true) || ($white && $check[1] === true))) {
-//                      ToDo: warum hier white flippen?
                             $possibleMoves = offCheck($grid, !$white, $allVectors, $check);
                         } else {
                             $possibleMoves[] = [$yToTest, $xToTest];
