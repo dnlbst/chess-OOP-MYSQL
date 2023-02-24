@@ -1,0 +1,26 @@
+{
+    "white": true,
+    "pieces": [
+        {
+            "class": "Pawn",
+            "unicode": "&#x265F;",
+            "white": false,
+            "x": 2,
+            "y": 5
+        },
+        {
+            "class": "Pawn",
+            "unicode": "&#x2659;",
+            "white": true,
+            "x": 0,
+            "y": 7
+        },
+        {
+            "class": "King",
+            "unicode": "&#x2654;",
+            "white": true,
+            "x": 3,
+            "y": 7
+        }
+    ]
+}
