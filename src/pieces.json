@@ -1,19 +1,37 @@
 {
-    "white": true,
+    "check": {
+        "white": true,
+        "black": false
+    },
+    "white": false,
     "pieces": [
         {
-            "class": "Pawn",
-            "unicode": "&#x265F;",
+            "class": "Rook",
+            "unicode": "&#x265C;",
             "white": false,
-            "x": 2,
+            "x": 0,
+            "y": 0
+        },
+        {
+            "class": "King",
+            "unicode": "&#x265A;",
+            "white": false,
+            "x": 3,
+            "y": 0
+        },
+        {
+            "class": "Pawn",
+            "unicode": "&#x2659;",
+            "white": true,
+            "x": 1,
             "y": 5
         },
         {
             "class": "Pawn",
             "unicode": "&#x2659;",
             "white": true,
-            "x": 0,
-            "y": 7
+            "x": 2,
+            "y": 2
         },
         {
             "class": "King",

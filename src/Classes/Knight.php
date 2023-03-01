@@ -2,8 +2,8 @@
 
 class Knight extends Piece
 {
-    protected $vectors = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2],[-1,-2]];
-    protected $loopStop = true;
+    protected array $vectors = [[-2,-1],[-2,1],[-1,2],[1,2],[2,1],[2,-1],[1,-2],[-1,-2]];
+    protected bool $loopStop = true;
 
     public function __construct($x, $y, $white = true)
     {

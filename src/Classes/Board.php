@@ -3,13 +3,14 @@
 class Board
 {
 
-    protected $grid = [];
-    protected $message = '';
+    protected bool $white = true;
+    protected array $grid = [];
+    protected string $message = '';
 
     /**
      * @return array
      */
-    public function getGrid()
+    public function getGrid(): array
     {
         return $this->grid;
     }
@@ -17,9 +18,25 @@ class Board
     /**
      * @param array $grid
      */
-    public function setGrid($grid)
+    public function setGrid($grid): void
     {
         $this->grid = $grid;
+    }
+
+    /**
+     * @return bool
+     */
+    public function getWhite(): bool
+    {
+        return $this->white;
+    }
+
+    /**
+     * @param bool $white
+     */
+    public function setWhite(bool $white): void
+    {
+        $this->white = $white;
     }
 
     /**
@@ -37,13 +54,12 @@ class Board
     {
         $this->message = $message;
     }
-
-    public function initGrid()
+// loadBoard
+    public function initPieces(): void
     {
-        if(!file_exists('pieces.json')){
-            $this->setGrid(
-                [
-//                    'white' => true,
+        if (!file_exists('pieces.json')) {
+            $this->grid = [
+
 //                    'pieces' => [
 //                        new Rook(0, 0, false), new Knight(1, 0, false), new Bishop(2, 0, false), new King(3, 0, false), new Queen(4, 0, false), new Bishop(5, 0, false), new Knight(6, 0, false), new Rook(7, 0, false),
 //                        new Pawn(0, 1, false), new Pawn(1, 1, false), new Pawn(2, 1, false), new Pawn(3, 1, false), new Pawn(4, 1, false), new Pawn(5, 1, false), new Pawn(6, 1, false), new Pawn(7, 1, false),
@@ -51,15 +67,16 @@ class Board
 //                        new Rook(0, 7), new Knight(1, 7), new Bishop(2, 7), new King(3, 7), new Queen(4, 7), new Bishop(5, 7), new Knight(6, 7), new Rook(7, 7)
 //                    ]
 
-                    'white' => true,
                     'pieces' => [
-                        new Pawn(2, 5, false),
-
-                        new Pawn(0, 7),
-                        new King(3, 7)
+                        new Rook(0, 0, false),new Bishop(2, 4, false),new King(3, 0, false),
+                        new Pawn(0, 7),new Pawn(2, 2),new King(3, 7)
                     ]
-                ]
-            );
+
+//                    'pieces' => [
+//                        new Rook(0, 7),new King(3, 0, false),new Bishop(0, 4, false),new King(3, 7)
+//                    ]
+
+            ];
         } else {
             $this->loadGrid();
         }
@@ -76,29 +93,29 @@ class Board
     public function getPieceOnGrid($x, $y)
     {
         foreach ($this->grid['pieces'] as $piece) {
-            if($piece->getX() === $x && $piece->getY() === $y){
+            if ($piece->getX() === $x && $piece->getY() === $y) {
                 return $piece;
             }
         }
         return null;
     }
 
-    public function coordinatesInArray($x, $y, $coordinates){
-        foreach ($coordinates as $coordinate){
-//            var_dump($coordinate);
-            if($coordinate[0] === $x && $coordinate[1] === $y){
+    public function coordinatesInArray($x, $y, $coordinates): bool
+    {
+        foreach ($coordinates as $coordinate) {
+            if ($coordinate[0] === $x && $coordinate[1] === $y) {
                 return true;
             }
         }
         return false;
     }
 
-    public function findKing($white)
+    public function findKing($white) : array
     {
         $location = [];
         $grid = $this->getGrid();
-        foreach ($grid['pieces'] as $piece){
-            if($piece instanceof \King && $piece->getWhite() === $white){
+        foreach ($grid['pieces'] as $piece) {
+            if ($piece instanceof \King && $piece->getWhite() === !$this->grid['white']) {
                 $location[] = $piece->getX();
                 $location[] = $piece->getY();
             }
@@ -106,35 +123,51 @@ class Board
         return $location;
     }
 
-    public function fieldUnderAttack($x, $y)
+    public function fieldUnderAttack($x, $y): bool
     {
         $fieldUnderAttack = false;
         foreach ($this->grid['pieces'] as $piece) {
-            if(!$piece->getWhite()){
+            if ($piece->getWhite() === $this->grid['white'] ) {
                 $enemyMoves = $piece->getPossibleMoves($this);
-                if($this->coordinatesInArray($x, $y, $enemyMoves)){
+                if ($this->coordinatesInArray($x, $y, $enemyMoves)) {
                     $fieldUnderAttack = true;
                 }
             }
         }
-//        var_dump($fieldUnderAttack);
         return $fieldUnderAttack;
     }
 
-//    public function inCheck($white)
+    public function inCheck($white) : bool
+    {
+        $inCheck = false;
+        $kingPos = $this->findKing($white);
+        if($this->fieldUnderAttack($kingPos[0], $kingPos[1])){
+            $inCheck = true;
+            if($white){
+                $this->grid['check']['white'] = true;
+            } else  {
+                $this->grid['check']['black'] = true;
+            }
+        }
+        return $inCheck;
+    }
+
+//    public function offCheck($white) : array
 //    {
-//        $inCheck = false;
-//        $kingPos = $this->findKing($white);
-//        if($this->fieldUnderAttack($kingPos[0], $kingPos[1])){
-//            var_dump($inCheck);
-//            $inCheck = true;
+//        $offCheck = [];
+//        foreach ($this->grid['pieces'] as $piece){
+//            if($piece->getWhite() === $white){
+//                $fellowMoves[] = $piece->getPossibleMoves($this);
+//            }
+//
 //        }
-//        return $inCheck;
+//
+//        return $offCheck;
 //    }
 
-    public function moveAction($post)
+    public function moveAction($post): void
     {
-        if(isset($post['from']) && ($post['to'])){
+        if (isset($post['from']) && ($post['to'])) {
             $from = str_split($post['from']);
             $xFrom = $this->xAxis[strtolower($from[0])];
             $yFrom = $this->yAxis[$from[1]];
@@ -144,18 +177,20 @@ class Board
             $yTo = $this->yAxis[$to[1]];
 
             $piece = $this->getPieceOnGrid($xFrom, $yFrom);
-            if($piece !== null){
-                if($piece->getWhite() === $this->grid['white']){
-                    var_dump($piece->getPossibleMoves($this));
-                    if($this->coordinatesInArray($xTo, $yTo, $piece->getPossibleMoves($this))){
+            if ($piece !== null) {
+                if ($piece->getWhite() === $this->grid['white']) {
+                    if ($this->coordinatesInArray($xTo, $yTo, $piece->getPossibleMoves($this))) {
                         $this->deletePiece($xTo, $yTo);
                         $this->movePiece($piece, $xTo, $yTo);
-                        $this->grid['white'] = !$this->grid['white'];
-                        if($this->grid['white']){
-                            $this->setMessage("⚪ White's turn!");
+                        if (!$this->grid['white']) {
+                            $this->message = ("⚪ White's turn!");
                         } else {
-                            $this->setMessage("⚫ Black's turn!");
+                            $this->message = ("⚫ Black's turn!");
                         }
+                        if($this->inCheck($this->white)){
+                            $this->message .= ("<br>" . "!!! SCHACH !!!");
+                        }
+                        $this->grid['white'] = !$this->grid['white'];
                     } else {
                         $this->setMessage('not a possible move');
                     }
@@ -168,10 +203,11 @@ class Board
         }
     }
 
-    public function deletePiece($xNew, $yNew)
+    public function deletePiece($xNew, $yNew) : void
     {
-        foreach ($this->grid['pieces'] as $key => $piece){
-            if($xNew === $piece->getX() && $yNew === $piece->getY()){
+        foreach ($this->grid['pieces'] as $key => $piece) {
+            if ($xNew === $piece->getX() && $yNew === $piece->getY()) {
+                var_dump($key);
                 unset($this->grid['pieces'][$key]);
                 break;
             }
@@ -184,10 +220,14 @@ class Board
         $piece->setY($yNew);
     }
 
-    private function loadGrid()
+    /**
+     * @throws JsonException
+     */
+    private function loadGrid(): void
     {
         $data = json_decode(file_get_contents('pieces.json'), true);
         $this->grid['white'] = $data['white'];
+        $this->grid['check'] = $data['check'];
         foreach ($data['pieces'] as $piece){
             switch ($piece['class']){
                 case 'Rook':
@@ -208,21 +248,25 @@ class Board
                 case 'Pawn':
                     $newPiece = new Pawn($piece['x'], $piece['y'], $piece['white']);
                     break;
-            }
-            $this->grid['pieces'][] = $newPiece;
 
-            if($this->grid['white']){
-                $this->setMessage("⚪ White's turn!");
             }
+            $this->grid['pieces'][] = $newPiece;  // könnte sein dass, kein case in dem switch erfüllt ist (thorie) könnte man mit default: $newPiece = null oder oben anfangs mit null declarieren
+            $this->setMessage("⚪ White's turn!");
         }
     }
 
-    public function saveGrid()
+    public function saveGrid(): void
     {
-        $data = [];
-        $data['white'] = $this->grid['white'];
-        $data['pieces'] = [];
-        foreach ($this->grid['pieces'] as $piece){
+        if(!isset($this->grid['white']) && !isset($this->grid['check'])){
+            $this->grid['white'] = true;
+            $this->grid['check'] = ['white' => false, 'black' => false];
+        }
+        $data = [
+            'check' => $this->grid['check'],
+            'white' => $this->grid['white'],
+            'pieces' => []
+        ];
+        foreach ($this->grid['pieces'] as $piece) {
             $data['pieces'][] = $piece->getProperties();
         }
         file_put_contents('pieces.json', json_encode($data, JSON_PRETTY_PRINT));
@@ -232,24 +276,24 @@ class Board
     {
         if (isset($post['reset'])) {
             unlink('pieces.json');
-            $this->setMessage("reset, file deleted!"."<br>"."⚪ White's turn!");
+            $this->setMessage("reset, file deleted!" . "<br>" . "⚪ White's turn!");
         }
     }
 
     public function showGrid()
     {
-        for($i=0; $i <= 7; $i++){
-            echo "<div class='rownum'>" . (8-$i). "</div>";
+        for ($i = 0; $i <= 7; $i++) {
+            echo "<div class='rownum'>" . (8 - $i) . "</div>";
             echo "<div class='row'>";
-            for($j=0;$j<=7;$j++){
-                $total=$i+$j;
-                if($total%2===0){
+            for ($j = 0; $j <= 7; $j++) {
+                $total = $i + $j;
+                if ($total % 2 === 0) {
                     echo "<div class='white'>";
                 } else {
                     echo "<div class='black'>";
                 }
                 $piece = $this->getPieceOnGrid($j, $i);
-                if($piece !== null){
+                if ($piece !== null) {
                     echo $piece->getUnicode();
                 }
                 echo '</div>';

@@ -2,8 +2,8 @@
 
 class Pawn extends Piece
 {
-    protected $vectors = [[0, -1]];
-    protected $loopStop = true;
+    protected array $vectors = [[0, -1]];
+    protected bool $loopStop = true;
 
     public function __construct($x, $y, $white = true)
     {
@@ -16,12 +16,11 @@ class Pawn extends Piece
         }
     }
 
-    public function getPossibleMoves($board)
+    public function getPossibleMoves($board) : array
     {
         /** @var Board $board */
-        $grid = $board->getGrid();
-        // todo so kann eine funktion für wer is dran oder schach ausgelagert werden, macht erst sinn wenn man merkt dass man eine sache öfter braucht! aber hier brauchen wir darf man schlagen!?
         $possibleMoves = parent::getPossibleMoves($board);
+
         //Am Anfang darf ein Bauer 2 Schritte gehen
         if($this->white && $this->getY() === 6){
             $possibleMoves[] = [$possibleMoves[0][0], $possibleMoves[0][1] - 1];

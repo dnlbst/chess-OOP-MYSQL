@@ -2,12 +2,12 @@
 
 class Piece
 {
-    protected $vectors = [];
+    protected array $vectors = [];
     protected $unicode;
     protected $white = true;
-    protected $x = 0;
-    protected $y = 0;
-    protected $loopStop = false;
+    protected int $x = 0;
+    protected int $y = 0;
+    protected bool $loopStop = false;
 
     public function __construct($x, $y, $white = true)
     {
@@ -16,26 +16,31 @@ class Piece
         $this->y = $y;
     }
 
-    public function getProperties()
+    public function getProperties(): array
     {
         $properties['class'] = get_class($this);
-        $properties['unicode'] = $this->getUnicode();
-        $properties['white'] = $this->getWhite();
-        $properties['x'] = $this->getX();
-        $properties['y'] = $this->getY();
+        $properties['unicode'] = $this->unicode;
+        $properties['white'] = $this->white;
+        $properties['x'] = $this->x;
+        $properties['y'] = $this->y;
         return $properties;
     }
 
-    public function getPossibleMoves($board)
+    /**
+     * @param $board
+     * @return array
+     */
+    public function getPossibleMoves($board): array
     {
-        $grid = $board->getGrid();
+        /** @var Board $board */
         $possibleMoves = [];
         foreach ($this->vectors as $vector){
-            $xToTest = $this->getX() + $vector[0];
-            $yToTest = $this->getY() + $vector[1];
+            $xToTest = $this->x + $vector[0];
+            $yToTest = $this->y + $vector[1];
             while($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7){
                 $piece = $board->getPieceOnGrid($xToTest, $yToTest);
-                if($piece === null || ($piece instanceof Piece && $grid['white'] !== $piece->getWhite()))
+                $grid = $board->getGrid();
+                if($piece === null || ($piece instanceof Piece && $this->white === $grid['white']))
                 {
                     $possibleMoves[] = [$xToTest, $yToTest];
                 }

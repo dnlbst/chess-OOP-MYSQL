@@ -2,8 +2,8 @@
 
 class King extends Piece
 {
-    protected $vectors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
-    protected $loopStop = true;
+    protected array $vectors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+    protected bool $loopStop = true;
 
     public function __construct($x, $y, $white = true)
     {
@@ -15,12 +15,28 @@ class King extends Piece
         }
     }
 
-//    public function getPossibleMoves($board)
-//    {
-//        $possibleMoves = parent::getPossibleMoves($board);
-//        //
-//        return $possibleMoves;
-//    }
+    public function getPossibleMoves($board) : array
+    {
+        /** @var Board $board */
+        $possibleMoves = parent::getPossibleMoves($board);
+
+        return $possibleMoves;
+    }
+
+    public function possibleMovesKing($board) : array
+    {
+        /** @var Board $board */
+        $possibleMovesKing = [];
+        if($board->inCheck($this->white)){
+            $movesKing = $this->getPossibleMoves($board);
+            foreach ($movesKing as $move){
+                if(!$board->fieldUnderAttack($move[0], $move[1])){
+                    $possibleMovesKing[] = $move;
+                }
+            }
+        }
+        return $possibleMovesKing;
+    }
 
 
 }
