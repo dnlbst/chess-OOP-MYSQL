@@ -1,6 +1,15 @@
 {
+<<<<<<< Updated upstream
     "white": true,
     "grid": [
+=======
+    "check": {
+        "white": false,
+        "black": false
+    },
+    "white": true,
+    "pieces": [
+>>>>>>> Stashed changes
         {
             "class": "Rook",
             "unicode": "&#x2656;",
@@ -9,11 +18,40 @@
             "y": 7
         },
         {
+<<<<<<< Updated upstream
             "class": "Knight",
             "unicode": "&#x265E;",
             "white": false,
             "x": 1,
             "y": 7
+=======
+            "class": "Bishop",
+            "unicode": "&#x265D;",
+            "white": false,
+            "x": 2,
+            "y": 4
+        },
+        {
+            "class": "King",
+            "unicode": "&#x265A;",
+            "white": false,
+            "x": 3,
+            "y": 0
+        },
+        {
+            "class": "Pawn",
+            "unicode": "&#x2659;",
+            "white": true,
+            "x": 0,
+            "y": 7
+        },
+        {
+            "class": "Pawn",
+            "unicode": "&#x2659;",
+            "white": true,
+            "x": 2,
+            "y": 2
+>>>>>>> Stashed changes
         },
         {
             "class": "King",
