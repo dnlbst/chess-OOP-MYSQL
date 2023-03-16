@@ -16,7 +16,7 @@ class Pawn extends Piece
         }
     }
 
-    public function getPossibleMoves($board) : array
+    public function getPossibleMoves($board, $sim = false) : array
     {
         /** @var Board $board */
         $possibleMoves = parent::getPossibleMoves($board);

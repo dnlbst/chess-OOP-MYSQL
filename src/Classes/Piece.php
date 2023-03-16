@@ -30,7 +30,7 @@ class Piece
      * @param $board
      * @return array
      */
-    public function getPossibleMoves($board): array
+    public function getPossibleMoves($board, $sim = false): array
     {
         /** @var Board $board */
         $possibleMoves = [];
@@ -39,14 +39,16 @@ class Piece
             $yToTest = $this->y + $vector[1];
             while($yToTest >= 0 && $yToTest <= 7 && $xToTest >= 0 && $xToTest <= 7){
                 $piece = $board->getPieceOnGrid($xToTest, $yToTest);
-                $grid = $board->getGrid();
-                if($piece === null || ($piece instanceof Piece && $this->white === $grid['white']))
+
+                if($piece === null || ($piece instanceof Piece && $this->white === $board->getWhite()))
                 {
                     $possibleMoves[] = [$xToTest, $yToTest];
                 }
+
                 if($piece !== null || $this->loopStop === true){
                     break;
                 }
+
                 $xToTest += $vector[0];
                 $yToTest += $vector[1];
             }

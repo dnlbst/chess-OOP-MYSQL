@@ -6,7 +6,6 @@ $board = new Board();
 $board->resetAction($_POST);
 $board->initPieces();
 $board->moveAction($_POST);
-//var_dump($board->fieldUnderAttack(2, 6));
 $board->saveGrid();
 $message = $board->getMessage();
 
