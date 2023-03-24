@@ -1,5 +1,5 @@
 {
-    "white": true,
+    "white": false,
     "grid": [
         {
             "class": "King",
@@ -7,21 +7,14 @@
             "white": false,
             "x": 3,
             "y": 0,
-            "check": false
+            "check": true
         },
         {
             "class": "Rook",
             "unicode": "&#x2656;",
             "white": true,
-            "x": 0,
-            "y": 6
-        },
-        {
-            "class": "Bishop",
-            "unicode": "&#x265D;",
-            "white": false,
-            "x": 1,
-            "y": 1
+            "x": 2,
+            "y": 0
         },
         {
             "class": "Pawn",

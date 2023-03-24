@@ -198,11 +198,19 @@ class Board
                 if ($piece->getWhite() === $this->white) {
                     $possibleMoves = $piece->getPossibleMoves($this, false);
                     $king = $this->findKing($this->white);
+//                    $this->unsetInCheckMoves($piece, $possibleMoves, $king, $this, $xFrom, $yFrom);
                     if($king->getCheck()){
                         $this->white = !$this->white;
-                        $this->unsetInCheckMoves($piece, $possibleMoves, $king, $this, $xFrom, $yFrom);
+                        foreach ($possibleMoves as $key => $move){
+                            $this->movePiece($piece, $move[0], $move[1]);
+                            if($king->check($this)){
+                                unset($possibleMoves[$key]);
+                            }
+                        }
                         $this->white = !$this->white;
+                        $this->movePiece($piece, $xFrom, $yFrom);
                     }
+
                     if ($this->coordinatesInArray($xTo, $yTo, $possibleMoves)) {
                         $this->deletePiece($xTo, $yTo);
                         $this->movePiece($piece, $xTo, $yTo);
@@ -222,8 +230,16 @@ class Board
                                     $x = $piece->getX();
                                     $y = $piece->getY();
                                     $panicMoves[] = $piece->getPossibleMoves($this, false);
+                                    var_dump($panicMoves);
                                     foreach ($panicMoves as $i => $pieceMoves){
-                                        $this->unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
+//                                        unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
+                                        foreach ($pieceMoves as $key => $move){
+                                            $this->movePiece($piece, $move[0], $move[1]);
+                                            if($enemyKing->check($this)){
+                                                unset($panicMoves[$i][$key]);
+                                            }
+                                            $this->movePiece($piece, $x, $y);
+                                        }
                                     }
                                 }
                             }
@@ -263,7 +279,7 @@ class Board
         }
     }
 
-    public function movePiece($piece, $xNew, $yNew) : void
+    public function movePiece($piece, $xNew, $yNew)
     {
         $piece->setX($xNew);
         $piece->setY($yNew);
@@ -314,7 +330,7 @@ class Board
         file_put_contents('pieces.json', json_encode($data, JSON_PRETTY_PRINT));
     }
 
-    public function resetAction($post) : void
+    public function resetAction($post)
     {
         if (isset($post['reset'])) {
             unlink('pieces.json');
@@ -322,7 +338,7 @@ class Board
         }
     }
 
-    public function showGrid() : void
+    public function showGrid()
     {
         for ($i = 0; $i <= 7; $i++) {
             echo "<div class='rownum'>" . (8 - $i) . "</div>";
@@ -343,4 +359,5 @@ class Board
             echo "</div>";
         }
     }
+
 }
