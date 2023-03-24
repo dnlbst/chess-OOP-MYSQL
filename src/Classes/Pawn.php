@@ -15,7 +15,6 @@ class Pawn extends Piece
             $this->vectors = [[0, 1]];
         }
     }
-
     public function getPossibleMoves($board, $sim = false) : array
     {
         /** @var Board $board */
@@ -69,8 +68,7 @@ class Pawn extends Piece
         if ($right !== null && $right->getWhite() !== $this->white) {
             $possibleMoves[] = [$right->getX(), $right->getY()];
         }
-
         return $possibleMoves;
     }
-
 }
+

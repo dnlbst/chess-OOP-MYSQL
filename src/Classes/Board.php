@@ -203,8 +203,6 @@ class Board
                         $this->unsetInCheckMoves($piece, $possibleMoves, $king, $this, $xFrom, $yFrom);
                         $this->white = !$this->white;
                     }
-
-
                     if ($this->coordinatesInArray($xTo, $yTo, $possibleMoves)) {
                         $this->deletePiece($xTo, $yTo);
                         $this->movePiece($piece, $xTo, $yTo);
@@ -345,5 +343,4 @@ class Board
             echo "</div>";
         }
     }
-
 }

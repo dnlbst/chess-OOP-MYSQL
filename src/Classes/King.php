@@ -57,3 +57,4 @@ class King extends Piece
         $this->check = $check;
     }
 }
+
