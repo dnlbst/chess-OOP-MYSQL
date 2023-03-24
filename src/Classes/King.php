@@ -41,7 +41,6 @@ class King extends Piece
         return $board->fieldUnderAttack($this->x, $this->y, $this->white);
     }
 
-
     /**
      * @return bool
      */

@@ -100,8 +100,13 @@ class Board
 //                        new Rook(0, 7), new Knight(1, 7), new Bishop(2, 7), new King(3, 7), new Queen(4, 7), new Bishop(5, 7), new Knight(6, 7), new Rook(7, 7)
 //
 
-                        new Rook(0, 6),new knight(2, 5, false),new King(3, 0),
-                        new King(2, 7, false)
+//                        new Rook(0, 6),new knight(2, 5, false),new King(3, 0),
+//                        new King(2, 7, false)
+
+                        new King(3, 0, false),
+                        new Rook(0, 6),
+                        new Bishop(1,1,false), new pawn(3, 1, false),new pawn(4, 1, false), new pawn(2, 1, false),
+                        new King(4, 7)
 
 //                        new Rook(0, 7),new King(3, 0, false),new Bishop(0, 4, false),new King(3, 7)
 
@@ -165,6 +170,18 @@ class Board
         return $king;
     }
 
+    public function unsetInCheckMoves($piece, $moves, $king, $board, $x, $y) : array
+    {
+        foreach ($moves as $key => $move){
+            $this->movePiece($piece, $move[0], $move[1]);
+            if($king->check($board)){
+                unset($moves[$key]);
+            }
+            $this->movePiece($piece, $x, $y);
+        }
+        return $moves;
+    }
+
     public function moveAction($post): void
     {
         if (isset($post['from']) && ($post['to'])) {
@@ -183,17 +200,10 @@ class Board
                     $king = $this->findKing($this->white);
                     if($king->getCheck()){
                         $this->white = !$this->white;
-                        foreach ($possibleMoves as $key => $move){
-                            $this->movePiece($piece, $move[0], $move[1]);
-
-                            if($king->check($this)){
-
-                                unset($possibleMoves[$key]);
-                            }
-                        }
+                        $this->unsetInCheckMoves($piece, $possibleMoves, $king, $this, $xFrom, $yFrom);
                         $this->white = !$this->white;
-                        $this->movePiece($piece, $xFrom, $yFrom);
                     }
+
 
                     if ($this->coordinatesInArray($xTo, $yTo, $possibleMoves)) {
                         $this->deletePiece($xTo, $yTo);
@@ -208,7 +218,28 @@ class Board
                             $this->message = ("⚫ Black's turn!");
                         }
                         if ($enemyKing->check($this)) {
-                            $this->message .= ("<br>" . "!!! SCHACH !!!");
+                            $panicMoves = [];
+                            foreach ($this->getGrid() as $piece){
+                                if($piece->getWhite() !== $this->white){
+                                    $x = $piece->getX();
+                                    $y = $piece->getY();
+                                    $panicMoves[] = $piece->getPossibleMoves($this, false);
+                                    foreach ($panicMoves as $i => $pieceMoves){
+                                        $this->unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
+                                    }
+                                }
+                            }
+                            $sum = 0;
+                            foreach ($panicMoves as $panicMove){
+                                foreach ($panicMove as $coordinates){
+                                    $sum += array_sum($coordinates);
+                                }
+                            }
+                            if($sum === 0){
+                                $this->setMessage('!!! CHECK MATE !!!');
+                            } else {
+                                $this->setMessage('!!! CHECK !!!');
+                            }
                             $enemyKing->setCheck(true);
                         }
                         $this->white = !$this->white;
