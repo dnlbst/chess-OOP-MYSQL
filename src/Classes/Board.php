@@ -263,7 +263,7 @@ class Board
         }
     }
 
-    public function movePiece($piece, $xNew, $yNew)
+    public function movePiece($piece, $xNew, $yNew) : void
     {
         $piece->setX($xNew);
         $piece->setY($yNew);
@@ -314,7 +314,7 @@ class Board
         file_put_contents('pieces.json', json_encode($data, JSON_PRETTY_PRINT));
     }
 
-    public function resetAction($post)
+    public function resetAction($post) : void
     {
         if (isset($post['reset'])) {
             unlink('pieces.json');
@@ -322,7 +322,7 @@ class Board
         }
     }
 
-    public function showGrid()
+    public function showGrid() : void
     {
         for ($i = 0; $i <= 7; $i++) {
             echo "<div class='rownum'>" . (8 - $i) . "</div>";
