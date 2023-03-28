@@ -224,19 +224,18 @@ class Board
                             $this->message = ("⚫ Black's turn!");
                         }
                         if ($enemyKing->check($this)) {
-                            $panicMoves = [];
+                            $unCheckMoves = [];
                             foreach ($this->getGrid() as $piece){
                                 if($piece->getWhite() !== $this->white){
                                     $x = $piece->getX();
                                     $y = $piece->getY();
-                                    $panicMoves[] = $piece->getPossibleMoves($this, false);
-                                    var_dump($panicMoves);
-                                    foreach ($panicMoves as $i => $pieceMoves){
+                                    $unCheckMoves[] = $piece->getPossibleMoves($this, false);
+                                    foreach ($unCheckMoves as $i => $pieceMoves){
 //                                        unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
                                         foreach ($pieceMoves as $key => $move){
                                             $this->movePiece($piece, $move[0], $move[1]);
                                             if($enemyKing->check($this)){
-                                                unset($panicMoves[$i][$key]);
+                                                unset($unCheckMoves[$i][$key]);
                                             }
                                             $this->movePiece($piece, $x, $y);
                                         }
@@ -244,8 +243,8 @@ class Board
                                 }
                             }
                             $sum = 0;
-                            foreach ($panicMoves as $panicMove){
-                                foreach ($panicMove as $coordinates){
+                            foreach ($unCheckMoves as $unCheckMove){
+                                foreach ($unCheckMove as $coordinates){
                                     $sum += array_sum($coordinates);
                                 }
                             }
