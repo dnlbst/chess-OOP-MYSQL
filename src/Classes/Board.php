@@ -223,37 +223,43 @@ class Board
                         } else {
                             $this->message = ("⚫ Black's turn!");
                         }
-                        if ($enemyKing->check($this)) {
-                            $unCheckMoves = [];
-                            foreach ($this->getGrid() as $piece){
-                                if($piece->getWhite() !== $this->white){
-                                    $x = $piece->getX();
-                                    $y = $piece->getY();
-                                    $unCheckMoves[] = $piece->getPossibleMoves($this, false);
-                                    foreach ($unCheckMoves as $i => $pieceMoves){
-//                                        unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
-                                        foreach ($pieceMoves as $key => $move){
-                                            $this->movePiece($piece, $move[0], $move[1]);
-                                            if($enemyKing->check($this)){
-                                                unset($unCheckMoves[$i][$key]);
-                                            }
-                                            $this->movePiece($piece, $x, $y);
-                                        }
-                                    }
-                                }
+
+                        foreach ($this->getGrid() as $piece){
+                            if($piece instanceof King && $piece->getWhite() !== $this->white){
+                                var_dump($piece->getPossibleMoves($this, false));
                             }
-                            $sum = 0;
-                            foreach ($unCheckMoves as $unCheckMove){
-                                foreach ($unCheckMove as $coordinates){
-                                    $sum += array_sum($coordinates);
-                                }
-                            }
-                            if($sum === 0){
-                                $this->setMessage('!!! CHECK MATE !!!');
-                            } else {
-                                $this->setMessage('!!! CHECK !!!');
-                            }
-                            $enemyKing->setCheck(true);
+
+//                        if ($enemyKing->check($this)) {
+//                            $unCheckMoves = [];
+//                            foreach ($this->getGrid() as $piece){
+//                                if($piece->getWhite() !== $this->white){
+//                                    $x = $piece->getX();
+//                                    $y = $piece->getY();
+//                                    $unCheckMoves[] = $piece->getPossibleMoves($this, false);
+//                                    foreach ($unCheckMoves as $i => $pieceMoves){
+////                                        unsetInCheckMoves($piece, $pieceMoves, $enemyKing, $this, $x, $y);
+//                                        foreach ($pieceMoves as $key => $move){
+//                                            $this->movePiece($piece, $move[0], $move[1]);
+//                                            if($enemyKing->check($this)){
+//                                                unset($unCheckMoves[$i][$key]);
+//                                            }
+//                                            $this->movePiece($piece, $x, $y);
+//                                        }
+//                                    }
+//                                }
+//                            }
+//                            $sum = 0;
+//                            foreach ($unCheckMoves as $unCheckMove){
+//                                foreach ($unCheckMove as $coordinates){
+//                                    $sum += array_sum($coordinates);
+//                                }
+//                            }
+//                            if($sum === 0){
+//                                $this->setMessage('!!! CHECK MATE !!!');
+//                            } else {
+//                                $this->setMessage('!!! CHECK !!!');
+//                            }
+//                            $enemyKing->setCheck(true);
                         }
                         $this->white = !$this->white;
                     } else {
