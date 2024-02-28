@@ -318,8 +318,7 @@ class Board
                     $newPiece = new Pawn($piece['x'], $piece['y'], $piece['white']);
                     break;
             }
-            $this->grid[] = $newPiece;  // könnte sein dass, kein case in dem switch erfüllt ist (thorie) könnte man mit default: $newPiece = null oder oben anfangs mit null declarieren
-            //$this->setMessage("⚪ White's turn!");
+            $this->grid[] = $newPiece;
         }
     }
 
